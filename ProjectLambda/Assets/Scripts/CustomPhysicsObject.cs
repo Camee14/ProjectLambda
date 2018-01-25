@@ -16,7 +16,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     protected Rigidbody2D rb2d;
 
     Vector2 target_velocity;
-    Vector2 acceleration;
+    Vector2 sum_of_forces;
     Vector2 velocity;
     Vector2 surface_normal;
     Vector2 tether_point;
@@ -50,7 +50,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     public void releaseTether() {
         db_result_force = Vector2.zero;
         db_tether_force = Vector2.zero;
-        db_velocity = Vector2.zero;
+        //db_velocity = Vector2.zero;
         db_vel_proj = Vector2.zero;
 
         is_tethered = false;
@@ -88,40 +88,46 @@ public class CustomPhysicsObject : MonoBehaviour {
     }
 
 	void FixedUpdate () {
-        is_grounded = false;
-
-        acceleration = Physics2D.gravity * mass;
-        if (is_tethered)
-        {
-            Vector2 tether = tether_point - rb2d.position;
-
-            float angle = Vector2.Angle(Physics2D.gravity, rb2d.position - tether_point) * Mathf.Deg2Rad;
-            float tangent_g = Physics2D.gravity.magnitude * mass * Mathf.Sin(angle);
-            float tensile_g = Physics2D.gravity.magnitude * mass * Mathf.Cos(angle);
-        
-            Vector2 tether_force = tether.normalized * tensile_g;
-
-            acceleration += tether_force;
-            acceleration = acceleration.normalized * tangent_g;
-
-            db_tether_force = tether_force;
-
+        Vector2 tether = Vector3.zero;
+   
+        if (is_tethered) {
+            tether = tether_point - rb2d.position;
             if (tether.magnitude > max_tether_length)
             {
-                rb2d.position = tether_point - tether.normalized * Mathf.Lerp(tether.magnitude, max_tether_length, 5f * Time.deltaTime);
+                float angle = Vector2.Angle(Physics2D.gravity, rb2d.position - tether_point) * Mathf.Deg2Rad;
+                float tangent_g = Physics2D.gravity.magnitude * mass * Mathf.Sin(angle);
+                float tensile_g = Physics2D.gravity.magnitude * mass * Mathf.Cos(angle);
 
-                Vector2 vel_proj = (Vector2.Dot(velocity, -tether) / Vector2.Dot(-tether, -tether)) * -tether;
-                db_vel_proj = -vel_proj;
-                velocity += -vel_proj;
+                Vector2 tangent = new Vector2(tether.y, -tether.x);
+
+                rb2d.position = tether_point - tether.normalized * Mathf.Lerp(tether.magnitude, max_tether_length, 5f * Time.deltaTime); //restrain movement to radius
+
+                Vector2 g_proj = (Vector2.Dot(Physics2D.gravity, tangent) / Vector2.Dot(tangent, tangent)) * tangent; //re-direct gravity along tangent
+                g_proj = g_proj.normalized * tangent_g;
+
+                Vector2 vel_proj = (Vector2.Dot(velocity, tangent) / Vector2.Dot(tangent, tangent)) * tangent; //re-direct velocity along tangent
+
+                sum_of_forces = g_proj;
+                velocity = vel_proj;
             }
         }
-        velocity += acceleration * Time.deltaTime;
-        velocity.x = target_velocity.x;
+        else {
+            sum_of_forces = Physics2D.gravity;
+        }
+
+        velocity += sum_of_forces * mass * Time.deltaTime;
+        if (isGrounded)
+        {
+            velocity.x = target_velocity.x;
+        }
 
         db_velocity = velocity;
-        db_result_force = acceleration;
+        db_result_force = sum_of_forces;
+
+        is_grounded = false;
 
         Vector2 x_movement = new Vector2(surface_normal.y, -surface_normal.x); //surface tangent
+
         Vector2 delta_pos = velocity * Time.deltaTime;
 
         Vector2 dir = x_movement * delta_pos.x;
