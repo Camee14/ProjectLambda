@@ -9,13 +9,14 @@ public class CustomPhysicsObject : MonoBehaviour {
     const float MIN_MOVE_DISTANCE = 0.001f;
     const float SHELL_RADIUS = 0.01f;
 
-    public float mass = 1f;
+    public float Mass = 1f;
     public float min_ground_normal_y = 0.65f;
+    public float MaxVelocity = 10f;
     public bool DrawDebug;
 
     protected Rigidbody2D rb2d;
 
-    Vector2 target_velocity;
+    Vector2 input;
     Vector2 sum_of_forces;
     Vector2 velocity;
     Vector2 surface_normal;
@@ -56,7 +57,7 @@ public class CustomPhysicsObject : MonoBehaviour {
         is_tethered = false;
     }
 
-    protected virtual Vector2 setTargetVelocity() {
+    protected virtual Vector2 setInputAcceleration() {
         return Vector2.zero;
     }
 
@@ -82,21 +83,20 @@ public class CustomPhysicsObject : MonoBehaviour {
     }
 
     void Update() {
-        target_velocity = setTargetVelocity();
+        input = setInputAcceleration();
 
         update();
     }
 
 	void FixedUpdate () {
-        Vector2 tether = Vector3.zero;
-   
+        sum_of_forces = Physics2D.gravity;
+
         if (is_tethered) {
-            tether = tether_point - rb2d.position;
+            Vector2 tether = tether_point - rb2d.position;
             if (tether.magnitude > max_tether_length)
             {
                 float angle = Vector2.Angle(Physics2D.gravity, rb2d.position - tether_point) * Mathf.Deg2Rad;
-                float tangent_g = Physics2D.gravity.magnitude * mass * Mathf.Sin(angle);
-                float tensile_g = Physics2D.gravity.magnitude * mass * Mathf.Cos(angle);
+                float tangent_g = Physics2D.gravity.magnitude * Mass * Mathf.Sin(angle);
 
                 Vector2 tangent = new Vector2(tether.y, -tether.x);
 
@@ -111,14 +111,16 @@ public class CustomPhysicsObject : MonoBehaviour {
                 velocity = vel_proj;
             }
         }
-        else {
-            sum_of_forces = Physics2D.gravity;
-        }
 
-        velocity += sum_of_forces * mass * Time.deltaTime;
-        if (isGrounded)
+        velocity += sum_of_forces * Mass * Time.deltaTime;
+
+        if (is_tethered && !is_grounded)
         {
-            velocity.x = target_velocity.x;
+            velocity += input * Mass * Time.deltaTime;
+        }
+        else
+        {
+            velocity.x = input.x;
         }
 
         db_velocity = velocity;
@@ -173,8 +175,8 @@ public class CustomPhysicsObject : MonoBehaviour {
             Vector2 tether = tether_point - next_pos;
             if (tether.magnitude > max_tether_length)
             {
-                rb2d.position = tether_point - tether.normalized * Mathf.Lerp(tether.magnitude, max_tether_length, 5f * Time.deltaTime);
-                return;
+                //rb2d.position = tether_point - tether.normalized * Mathf.Lerp(tether.magnitude, max_tether_length, 5f * Time.deltaTime);
+                //return;
             }
         }
         rb2d.position = next_pos;

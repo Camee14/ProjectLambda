@@ -12,15 +12,30 @@ public class Player : CustomPhysicsObject
 
     public Grapple grapple;
 
-    protected override Vector2 setTargetVelocity()
+    protected override Vector2 setInputAcceleration()
     {
         Vector2 move = Vector2.zero;
 
         move.x = Input.GetAxis("Horizontal");
+        move.y = Input.GetAxis("Vertical");
 
-        if (Input.GetButton("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump"))
         {
-            Velocity = new Vector2(Velocity.x, jump_force);
+            if (isGrounded)
+            {
+                Velocity = new Vector2(Velocity.x, jump_force);
+            }
+            else if (grapple.isGrappleConnected) {
+                grapple.detachGrapple();
+                if (Velocity.magnitude <= 1f)
+                {
+                    Velocity = new Vector2(Velocity.x, Velocity.y + jump_force * 2f);
+                }
+                else
+                {
+                    Velocity *= 2f;
+                }
+            }
         }
         else if(Input.GetButtonUp("Jump")) {
             if (Velocity.y > 0) {
