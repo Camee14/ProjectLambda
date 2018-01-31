@@ -20,6 +20,9 @@ public class Grapple : MonoBehaviour {
     public bool isGrappleConnected{
         get { return grapple_connected; }
     }
+    public void detachGrapple() {
+        grapple_connected = false;
+    }
     public float MaxLength {
         get { return max_wire_length; }
     }
@@ -50,23 +53,11 @@ public class Grapple : MonoBehaviour {
 
     void FixedUpdate () {
         Vector2 pos = transform.position;
-
-        if (grapple_connected) {
-            Vector2 world_point = grapple_target.TransformPoint(grapple_target_point);
-
-            RaycastHit2D hit = Physics2D.Raycast(world_point + (pos - world_point).normalized * 0.001f, pos - world_point, 200f, grapple_mask);
-            if (hit.collider != null)
-            {
-                //collision_points.Add(hit.point);
-            }
-            
-        }
-        else
-        {
+        if (!grapple_connected) { 
             Vector2 mouse_pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             
             RaycastHit2D hit = Physics2D.Raycast(transform.position, mouse_pos - pos, 200f, grapple_mask);
-            if (hit.collider != null && !grapple_connected)
+            if (hit.collider != null)
             {
                 has_grapple_target = true;
                 grapple_target = hit.transform;
