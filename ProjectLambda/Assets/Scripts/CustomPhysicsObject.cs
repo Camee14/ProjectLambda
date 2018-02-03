@@ -148,6 +148,7 @@ public class CustomPhysicsObject : MonoBehaviour {
             hit_list.Clear();
 
             for (int i = 0; i < count; i++) {
+                
                 hit_list.Add(hits[i]);
             }
 
