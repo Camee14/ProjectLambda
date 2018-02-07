@@ -128,7 +128,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 15
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -258,7 +258,7 @@ MonoBehaviour:
   Mass: 3
   min_ground_normal_y: 0.65
   MaxVelocity: 20
-  DrawDebug: 1
+  DrawDebug: 0
   move_speed: 12
   jump_force: 20
   grapple_speed: 10

@@ -90,7 +90,6 @@ public class CustomPhysicsObject : MonoBehaviour {
 
 	void FixedUpdate () {
         sum_of_forces = Physics2D.gravity;
-
         if (is_tethered) {
             Vector2 tether = tether_point - rb2d.position;
             if (tether.magnitude > max_tether_length)
@@ -111,12 +110,15 @@ public class CustomPhysicsObject : MonoBehaviour {
                 velocity = vel_proj;
             }
         }
-
         velocity += sum_of_forces * Mass * Time.deltaTime;
 
         if (is_tethered && !is_grounded)
         {
+
             velocity += input * Mass * Time.deltaTime;
+
+            //Vector2 inputX = new Vector2(input.x, 0);
+            //velocity += velocity.normalized * inputX.magnitude * Mass * Time.deltaTime;
         }
         else
         {

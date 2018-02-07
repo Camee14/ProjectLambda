@@ -12,6 +12,8 @@ public class Player : CustomPhysicsObject
 
     public Grapple grapple;
 
+    bool did_grapple_jump = false;
+
     protected override Vector2 setInputAcceleration()
     {
         Vector2 move = Vector2.zero;
@@ -27,22 +29,26 @@ public class Player : CustomPhysicsObject
             }
             else if (grapple.isGrappleConnected) {
                 grapple.detachGrapple();
+                releaseTether();
                 if (Velocity.magnitude <= 1f)
                 {
-                    Velocity = new Vector2(Velocity.x, Velocity.y + jump_force * 2f);
+                    Velocity = new Vector2(Velocity.x, jump_force);
                 }
                 else
                 {
-                    Velocity *= 2f;
+                     //Velocity += move * jump_force;
                 }
+                did_grapple_jump = true;
             }
         }
         else if(Input.GetButtonUp("Jump")) {
-            if (Velocity.y > 0) {
+            if (did_grapple_jump) {
+                did_grapple_jump = false;
+            }
+            else if (Velocity.y > 0) {
                 Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
             }
         }
-
         return move * move_speed;
     }
     protected override void fixedUpdate()

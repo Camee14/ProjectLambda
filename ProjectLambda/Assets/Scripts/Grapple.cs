@@ -17,9 +17,11 @@ public class Grapple : MonoBehaviour {
 
     Dictionary<int, Collider2D>platforms;
 
-    float current_wire_length = 6f;
+    float current_wire_length = 9f;
     bool has_grapple_target;
     bool grapple_connected;
+
+    bool controller_active = false;
 
     public bool isGrappleConnected{
         get { return grapple_connected; }
@@ -51,24 +53,56 @@ public class Grapple : MonoBehaviour {
 
     void Update()
     {
-        Vector2 pos = transform.position;
-        line.SetPosition(1, GrapplePoint - pos);
-        if (Input.GetButtonDown("Fire1") && has_grapple_target)
+        float triggers = Input.GetAxis("Fire1");
+
+        if (triggers < 0 && has_grapple_target)
         {
             grapple_connected = true;
             line.enabled = true;
         }
-        if (Input.GetButtonDown("Fire2") && grapple_connected)
+        if (triggers > 0 && grapple_connected)
         {
             grapple_connected = false;
             line.enabled = false;
+        }
+
+        Vector2 pos = transform.position;
+        if (grapple_connected)
+        {
+            line.SetPosition(1, GrapplePoint - pos);
+        }
+
+        if (controller_active)
+        {
+            Vector2 input = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            if (input.magnitude > 0) {
+                controller_active = false;
+            }
+        }
+        else {
+            Vector2 input = new Vector2(Input.GetAxis("Controller X"), Input.GetAxis("Controller Y"));
+            if (input.magnitude > 0)
+            {
+                controller_active = true;
+            }
         }
     }
 
     void FixedUpdate () {
         Vector2 pos = transform.position;
-        if (!grapple_connected) { 
-            Vector2 dir = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        if (!grapple_connected) {
+
+            Vector2 dir = Vector2.up;
+            if (controller_active)
+            {
+                dir.x = Input.GetAxis("Controller X");
+                dir.y = Input.GetAxis("Controller Y");
+            }
+            else
+            {
+                dir = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+            }
+
             RaycastHit2D hit;
             float angle = 0f;
             do
@@ -95,6 +129,11 @@ public class Grapple : MonoBehaviour {
                 has_grapple_target = true;
                 grapple_target = hit.transform;
                 grapple_target_point = grapple_target.InverseTransformPoint(hit.point);
+
+                current_wire_length = (hit.point - pos).magnitude;
+                if (current_wire_length > 6f) {
+                    current_wire_length *= 0.5f;
+                }
 
             }
             else
