@@ -8,15 +8,20 @@ Cameron: adding controller support.
 ##Bugs
 
 ## To-Do List
-Character Controller:
+**Character Controller:**
   - Movement:
     - [x] basic movement
     - [x] grappling hook
   - Attacks:
     - [ ] basic attack
+  - Animation
     
-Enemies:
-
-Environment:
+**Enemies:**
+  - Movement:
+    - *waypoint or more complex pathfinding?*
+**Environment:**
   - interactable elements:
     - [ ] checkpoints
+    - [ ] doors
+  - throwable elements
+    - *crates?*
