@@ -10,13 +10,13 @@ Cameron: adding controller support.
 ## To-Do List
 Character Controller:
   - Movement:
-    - [ ] basic movement
-    - [ ] grappling hook
+    - [x] basic movement
+    - [x] grappling hook
   - Attacks:
-    - basic attack
+    - [ ] basic attack
     
 Enemies:
 
 Environment:
   - interactable elements:
-    - checkpoints
+    - [ ] checkpoints
