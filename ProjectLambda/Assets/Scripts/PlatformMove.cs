@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlatformMove : MonoBehaviour {
+    [DraggablePoint(false)]
     public Vector2[] points;
+
     public float speed = 5f;
 
     int index = 0;
@@ -17,10 +19,4 @@ public class PlatformMove : MonoBehaviour {
             }
         }
 	}
-
-    void OnDrawGizmos() {
-        foreach (Vector2 point in points) {
-            Gizmos.DrawSphere(point, 0.25f);
-        }
-    }
 }
