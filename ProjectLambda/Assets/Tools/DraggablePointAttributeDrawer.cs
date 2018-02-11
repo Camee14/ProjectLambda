@@ -4,8 +4,11 @@ using System.Reflection;
 using System.Linq;
 
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(MonoBehaviour), true)]
 public class DraggablePointAttributeDrawer : Editor
 {
@@ -140,3 +143,4 @@ public class DraggablePointAttributeDrawer : Editor
         return enm.Current;
     }
 }
+#endif
