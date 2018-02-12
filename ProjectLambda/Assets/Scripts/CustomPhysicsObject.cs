@@ -26,6 +26,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     List<RaycastHit2D> hit_list;
 
     float max_tether_length;
+    float facing = -1f;
     bool is_tethered;
     bool is_grounded;
 
@@ -39,7 +40,11 @@ public class CustomPhysicsObject : MonoBehaviour {
         set { velocity = value; }
     }
 
-    public bool isGrounded{
+    public float Facing {
+        get { return facing; }
+    }
+
+    public bool IsGrounded{
         get { return is_grounded; }
     }
 
@@ -60,14 +65,9 @@ public class CustomPhysicsObject : MonoBehaviour {
     protected virtual Vector2 setInputAcceleration() {
         return Vector2.zero;
     }
-
-    protected virtual void update(){
-        
-    }
-
-    protected virtual void fixedUpdate(){
-
-    }
+    protected virtual void awake(){}
+    protected virtual void update(){}
+    protected virtual void fixedUpdate(){}
 
     void Awake() {
         hits = new RaycastHit2D[16];
@@ -80,12 +80,17 @@ public class CustomPhysicsObject : MonoBehaviour {
         contact_filter.useLayerMask = true;
 
         is_tethered = false;
+
+        awake();
     }
 
     void Update() {
-        input = setInputAcceleration();
-
         update();
+        input = setInputAcceleration();
+        if (input.x != 0)
+        {
+            facing = input.x > 0f ? 1f : -1f;
+        }
     }
 
 	void FixedUpdate () {
