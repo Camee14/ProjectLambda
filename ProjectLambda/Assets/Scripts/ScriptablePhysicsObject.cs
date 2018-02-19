@@ -9,7 +9,7 @@ public class ScriptablePhysicsObject : CustomPhysicsObject {
     string current_action = NO_CURRENT_ACTION;
 
     protected virtual void onActionFinished(string name, bool was_interupted) {
-        Debug.Log("action finished");
+
     }
     protected override void awake()
     {

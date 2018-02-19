@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,12 +15,19 @@ public class Player : ScriptablePhysicsObject
 
     bool did_grapple_jump = false;
 
+    bool movement_enabled = true;
+    bool jump_enabled = true;
+
     protected override void awake()
     {
         base.awake();
 
         addAction("Basic Attack", new BasicAttack(this));
         addAction("Grapple Leap Attack", new GrappleLeapAttack(this));
+        addAction("Ground Slam Attack", new GroundSlamAttack(this));
+
+        //QualitySettings.vSyncCount = 0;
+        //Application.targetFrameRate = 30;
     }
     protected override void update()
     {
@@ -34,10 +42,17 @@ public class Player : ScriptablePhysicsObject
             else
             {
                 startAction("Basic Attack", false);
+               
             }
         }
         if (Input.GetButtonDown("Attack 2")) {
-
+            if (!IsGrounded && !grapple.isGrappleConnected)
+            {
+                startAction("Ground Slam Attack", false);
+            }
+            else if (grapple.isGrappleConnectedToEnemy) {
+                
+            }
         }
     }
     protected override void fixedUpdate()
@@ -57,55 +72,77 @@ public class Player : ScriptablePhysicsObject
     {
         Vector2 move = Vector2.zero;
 
-        move.x = Input.GetAxis("Horizontal");
-        move.y = Input.GetAxis("Vertical");
-
-        if (Input.GetButtonDown("Jump"))
+        if (movement_enabled)
         {
-            if (IsGrounded)
+            move.x = Input.GetAxis("Horizontal");
+            move.y = Input.GetAxis("Vertical");
+        }
+        if (jump_enabled)
+        {
+            if (Input.GetButtonDown("Jump"))
             {
-                Velocity = new Vector2(Velocity.x, jump_force);
-            }
-            else if (grapple.isGrappleConnected)
-            {
-                grapple.detachGrapple();
-                releaseTether();
-                if (Velocity.magnitude <= 1f)
+                if (IsGrounded)
                 {
                     Velocity = new Vector2(Velocity.x, jump_force);
                 }
-                else
+                else if (grapple.isGrappleConnected)
                 {
-                    //Velocity += move * jump_force;
+                    grapple.detachGrapple();
+                    releaseTether();
+                    if (Velocity.magnitude <= 1f)
+                    {
+                        Velocity = new Vector2(Velocity.x, jump_force);
+                    }
+                    else
+                    {
+                        //Velocity += move * jump_force;
+                    }
+                    did_grapple_jump = true;
                 }
-                did_grapple_jump = true;
             }
-        }
-        else if (Input.GetButtonUp("Jump"))
-        {
-            if (did_grapple_jump)
+            else if (Input.GetButtonUp("Jump"))
             {
-                did_grapple_jump = false;
-            }
-            else if (Velocity.y > 0)
-            {
-                Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
+                if (did_grapple_jump)
+                {
+                    did_grapple_jump = false;
+                }
+                else if (Velocity.y > 0)
+                {
+                    Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
+                }
             }
         }
         return move * move_speed;
     }
-    bool SAGroundSlam(bool interupt) {
-        if (interupt)
-        {
-            //interupt the attack
-            return true;
-        }
-        return true;
+    void canUseAllControls(bool enabled) {
+        canUseMovementControls(enabled);
+        canUseJump(enabled);
     }
-    void OnDrawGizmos()
+    void canUseMovementControls(bool enabled)
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position + transform.right * Facing, new Vector3(3f, 1f, 1f));
+        movement_enabled = enabled;
+    }
+    void canUseJump(bool enabled) {
+        jump_enabled = enabled;
+    }
+    /*
+    WIP: function slows down game speed to the value of param floor.
+    better alternative may be to slow down only player and affected entities.
+    */
+    IEnumerator doHitPause(float floor, float rate) {
+        while (Time.timeScale > floor)
+        {
+            Time.timeScale = Mathf.Clamp(Time.timeScale - rate * Time.unscaledDeltaTime, floor, 1f);
+            yield return null;
+        }
+        Time.timeScale = 1f;
+    }
+    protected override void onDrawGizmos()
+    {
+        base.onDrawGizmos();
+
+        //Gizmos.color = Color.red;
+       // Gizmos.DrawWireCube(transform.position + transform.right * Facing, new Vector3(3f, 1f, 1f));
     }
 
     private class BasicAttack : ScriptableAction {
@@ -128,10 +165,11 @@ public class Player : ScriptablePhysicsObject
                     {
                         if (!tab.IsStunned)
                         {
-                            tab.doAttackBehaviour(parent.transform.position, 19f);
+                            tab.doAttackBehaviour(parent.transform.position, 8f);
                         }
                     }
                 }
+                ((Player)parent).StartCoroutine(((Player)parent).doHitPause(0.1f, 3f));
             }
             return true;
         }
@@ -150,7 +188,7 @@ public class Player : ScriptablePhysicsObject
         }
         public override void startAction()
         {
-
+            ((Player)parent).canUseAllControls(false);
         }
         public override bool continueAction()
         {
@@ -164,7 +202,7 @@ public class Player : ScriptablePhysicsObject
                 {
                     if (!tab.IsStunned)
                     {
-                        tab.doAttackBehaviour(parent.transform.position, 50f);
+                        tab.doAttackBehaviour(parent.transform.position, 12f);
                     }
                 }
                 return true;
@@ -173,11 +211,70 @@ public class Player : ScriptablePhysicsObject
         }
         public override void endAction()
         {
-
+            ((Player)parent).canUseAllControls(true);
         }
         public override void interuptAction()
         {
+            ((Player)parent).canUseAllControls(true);
+        }
+    }
+    private class GroundSlamAttack : ScriptableAction
+    {
+        int multiplier = 10;
+        public GroundSlamAttack(ScriptablePhysicsObject p) : base(p)
+        {
 
+        }
+        public override void startAction()
+        {
+            parent.Mass *= multiplier;
+        }
+        public override bool continueAction()
+        {
+            if (!parent.IsGrounded) {
+                return false;
+            }
+            //do ground attack;
+            LayerMask mask = LayerMask.GetMask("Enemy");
+            Collider2D[] cols = Physics2D.OverlapCircleAll(parent.transform.position, 10f, mask);
+            foreach (Collider2D col in cols) {
+                TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
+                if (tab != null) {
+                    float mag = 1f - ((col.transform.position - parent.transform.position).magnitude / 10f);
+                    tab.doAttackBehaviour(parent.transform.position, 16f * mag);
+                }
+            }
+            return true;
+        }
+        public override void endAction()
+        {
+            parent.Mass = parent.Mass / multiplier;
+        }
+        public override void interuptAction()
+        {
+            parent.Mass = parent.Mass / multiplier;
+        }
+    }
+    private class GrappleSlam : ScriptableAction
+    {
+        public GrappleSlam(ScriptablePhysicsObject p) : base(p)
+        {
+        }
+        public override void startAction()
+        {
+            
+        }
+        public override bool continueAction()
+        {
+            return true;
+        }
+        public override void endAction()
+        {
+            
+        }
+        public override void interuptAction()
+        {
+            
         }
     }
 }

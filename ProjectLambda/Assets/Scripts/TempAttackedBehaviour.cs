@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TempAttackedBehaviour : MonoBehaviour {
-    Vector2 vel;
-    Rigidbody2D rb2d;
-
+public class TempAttackedBehaviour : CustomPhysicsObject {
     bool is_stunned = false;
     float timer;
 
     public bool IsStunned{
         get { return is_stunned; }
     }
-    void Awake() {
-        rb2d = GetComponent<Rigidbody2D>();
-    }
-    void FixedUpdate() {
+    protected override void fixedUpdate() {
+        base.fixedUpdate();
         if (is_stunned)
         {
             if (timer >= 0.8f)
@@ -33,7 +28,8 @@ public class TempAttackedBehaviour : MonoBehaviour {
         Vector2 dir = new Vector2(transform.position.x - attacker_pos.x, transform.position.y - attacker_pos.y);
         dir.y += 3f;
         dir.Normalize();
-        rb2d.AddForce(dir * power, ForceMode2D.Impulse);
+
+        Velocity = dir * power;
 
         is_stunned = true;
     }
