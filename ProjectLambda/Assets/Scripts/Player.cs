@@ -10,10 +10,12 @@ public class Player : ScriptablePhysicsObject
 
     public float grapple_speed = 10f;
     public float swing_force = 20f;
+    public float RespawnY = -250f;
 
     public Grapple grapple;
 
     Health health;
+    Vector3 respawn_point;
 
     bool did_grapple_jump = false;
     bool movement_enabled = true;
@@ -33,6 +35,8 @@ public class Player : ScriptablePhysicsObject
 
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 30;
+
+        respawn_point = transform.position;
     }
     protected override void update()
     {
@@ -60,7 +64,7 @@ public class Player : ScriptablePhysicsObject
             }
         }
 
-        if (transform.position.y < -15f) {
+        if (transform.position.y < RespawnY) {
             health.instakill();
         }
     }
@@ -140,7 +144,7 @@ public class Player : ScriptablePhysicsObject
     void die() {
         //triggered when player health reaches 0
         Debug.Log("you have died");
-        transform.position = new Vector3(-20, 10, 0);
+        transform.position = respawn_point;
         health.reset();
     }
     /*
