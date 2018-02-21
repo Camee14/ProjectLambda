@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Grapple : MonoBehaviour {
 
+    public float MinWireLength = 0.5f;
     public float MaxWireLength = 20f;
     public bool DrawDebug;
 
@@ -26,6 +27,9 @@ public class Grapple : MonoBehaviour {
     public bool isGrappleConnected{
         get { return grapple_connected; }
     }
+    public bool isGrappleConnectedToEnemy {
+        get { return grapple_connected && grapple_target.tag == "Enemy"; }
+    }
     public void detachGrapple() {
         grapple_connected = false;
         line.enabled = false;
@@ -36,9 +40,12 @@ public class Grapple : MonoBehaviour {
     public Vector2 GrapplePoint {
         get { return grapple_target.TransformPoint(grapple_target_point); }
     }
+    public Transform GrappleTarget {
+        get { return grapple_target; }
+    }
 
     void Start () {
-        grapple_mask = LayerMask.GetMask("Grappleable");
+        grapple_mask = LayerMask.GetMask("Grappleable", "Enemy");
         has_grapple_target = false;
         grapple_connected = false;
 
@@ -70,6 +77,10 @@ public class Grapple : MonoBehaviour {
         if (grapple_connected)
         {
             line.SetPosition(1, GrapplePoint - pos);
+            if (controller_active) {
+                //float inputY = Input.GetAxis("Vertical");
+                //current_wire_length =  Mathf.Clamp(current_wire_length - inputY * 5f * Time.deltaTime, MinWireLength, MaxWireLength);
+            }
         }
 
         if (controller_active)

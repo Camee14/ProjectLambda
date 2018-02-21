@@ -21,9 +21,10 @@ GameObject:
   - component: {fileID: 4724700984759674}
   - component: {fileID: 212830154637078228}
   - component: {fileID: 50185844681013706}
-  - component: {fileID: 114861918270975176}
   - component: {fileID: 61129154963177482}
   - component: {fileID: 96143622720990572}
+  - component: {fileID: 114861918270975176}
+  - component: {fileID: 114995608065687852}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -88,7 +89,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 11.32, y: 10.78, z: 0}
+  m_LocalPosition: {x: 13.3, y: 28.9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -118,7 +119,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.10980393, g: 0.20392159, b: 0.25882354, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
@@ -199,7 +200,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 20
 --- !u!61 &61129154963177482
 BoxCollider2D:
   m_ObjectHideFlags: 1
@@ -331,6 +332,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbf51b7838216be45a829490281ae6e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MinWireLength: 0.75
   MaxWireLength: 20
   DrawDebug: 1
 --- !u!114 &114861918270975176
@@ -347,19 +349,34 @@ MonoBehaviour:
   Mass: 3
   min_ground_normal_y: 0.65
   MaxVelocity: 20
-  DrawDebug: 0
+  OverrideVelocityX: 1
+  DrawDebug: 1
+  is_grounded: 1
   move_speed: 12
   jump_force: 20
   grapple_speed: 10
   swing_force: 20
   grapple: {fileID: 114745566186501726}
+--- !u!114 &114995608065687852
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1335759214423424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ea447f34b09c44408b3708d418179e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  max_health: 100
+  current_health: 0
 --- !u!120 &120801903166874640
 LineRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1989515537307904}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -389,7 +406,7 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 3.7283707, y: 9.377262, z: 0}
   m_Parameters:
     serializedVersion: 2
     widthMultiplier: 0.1
@@ -462,7 +479,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: aa063910078ef5a4883dd1e4efc7d259, type: 2}
+  - {fileID: 2100000, guid: 533aa7554d5dd884cbfcff187a122e44, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -482,8 +499,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 52b6bf6d6fcf893468ea118816273c03, type: 3}
-  m_Color: {r: 0, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 21300002, guid: 52b6bf6d6fcf893468ea118816273c03, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
