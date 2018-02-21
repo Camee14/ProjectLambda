@@ -13,8 +13,9 @@ public class Player : ScriptablePhysicsObject
 
     public Grapple grapple;
 
-    bool did_grapple_jump = false;
+    Health health;
 
+    bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
 
@@ -25,6 +26,10 @@ public class Player : ScriptablePhysicsObject
         addAction("Basic Attack", new BasicAttack(this));
         addAction("Grapple Leap Attack", new GrappleLeapAttack(this));
         addAction("Ground Slam Attack", new GroundSlamAttack(this));
+
+        health = GetComponent<Health>();
+        health.OnHealthDamaged += healthDamaged;
+        health.OnCharacterDeath += die;
 
         //QualitySettings.vSyncCount = 0;
         //Application.targetFrameRate = 30;
@@ -53,6 +58,10 @@ public class Player : ScriptablePhysicsObject
             else if (grapple.isGrappleConnectedToEnemy) {
                 
             }
+        }
+
+        if (transform.position.y < -15f) {
+            health.instakill();
         }
     }
     protected override void fixedUpdate()
@@ -124,6 +133,15 @@ public class Player : ScriptablePhysicsObject
     }
     void canUseJump(bool enabled) {
         jump_enabled = enabled;
+    }
+    void healthDamaged(int hp, int max) {
+        Debug.Log("current hp precentage: " + ((float)hp / max) * 100);
+    }
+    void die() {
+        //triggered when player health reaches 0
+        Debug.Log("you have died");
+        transform.position = new Vector3(-20, 10, 0);
+        health.reset();
     }
     /*
     WIP: function slows down game speed to the value of param floor.

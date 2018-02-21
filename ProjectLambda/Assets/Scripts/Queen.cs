@@ -6,7 +6,6 @@ using UnityEngine;
  * **/
 public class Queen : MonoBehaviour {
 
-    public bool Alert = false;
     public float VisibilityRange = 10f;
     public float Speed = 5f;
     public float Frequency = 3f;
@@ -25,6 +24,10 @@ public class Queen : MonoBehaviour {
     LayerMask player_mask;
 
     int facing = -1;
+    float agro_timer;
+
+    //states
+    bool alert = false;
     bool attacking = false;
 
     void Awake() {
@@ -40,20 +43,21 @@ public class Queen : MonoBehaviour {
 
     }
     void FixedUpdate() {
-        if (!Alert)
+        if (!alert)
         {
             move();
         }
-        else if(Alert && !attacking) {
-            //setupAttack();
+        else if(alert && !attacking) {
+            agro_timer += Time.deltaTime;
+            if (agro_timer >= 3f) {
+                alert = false;
+                agro_timer = 0f;
+            }
         }
 
         if (player != null)
         {
-            if (!Alert)
-            {
-                detect();
-            }
+            detect();
         }
         else {
             Debug.LogWarning("no player in scene");
@@ -81,11 +85,25 @@ public class Queen : MonoBehaviour {
     }
     void detect() {
         RaycastHit2D hit = Physics2D.Raycast(rb2d.position, ((Vector2)player.transform.position) - rb2d.position, VisibilityRange, player_mask);
-        if (hit.collider != null) {
-            if (hit.transform.gameObject == player) {
-                Alert = true;
+        if (hit.collider != null)
+        {
+            if (!alert && hit.transform.gameObject == player)
+            {
+                alert = true;
+                attacking = true;
+
+                VisibilityRange *= 1.3f;
+
                 StartCoroutine(setupAttack());
             }
+            else if (alert && hit.transform.gameObject != player)
+            {
+                attacking = false;
+            }
+        }
+        else if(hit.collider == null && attacking) {
+            attacking = false;
+            VisibilityRange = VisibilityRange / 1.3f;
         }
     }
     IEnumerator setupAttack() {
