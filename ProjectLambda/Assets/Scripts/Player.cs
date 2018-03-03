@@ -15,7 +15,8 @@ public class Player : ScriptablePhysicsObject
     public Grapple grapple;
 
     Health health;
-    Vector3 respawn_point;
+    public Vector3 respawn_point;
+    //made that public so I could make sure the checkpoints were working
 
     bool did_grapple_jump = false;
     bool movement_enabled = true;
@@ -38,6 +39,16 @@ public class Player : ScriptablePhysicsObject
 
         respawn_point = transform.position;
     }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        //just sets the respawn point to the position of the last checkpoint reached
+        if (other.tag == "CheckPoint")
+        {
+            respawn_point = other.transform.position;
+        }
+    }
+
     protected override void update()
     {
         base.update();
