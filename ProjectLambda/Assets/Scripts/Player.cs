@@ -13,7 +13,6 @@ public class Player : CustomPhysicsObject
     public Health health = new Health();
     public Grapple grapple;
 
-    Health health;
     public Vector3 respawn_point;
     //made that public so I could make sure the checkpoints were working
 
