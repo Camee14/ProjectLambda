@@ -12,7 +12,9 @@ public class CustomPhysicsObject : MonoBehaviour {
     public float Mass = 1f;
     public float min_ground_normal_y = 0.65f;
     public float MaxVelocity = 10f;
-    public bool OverrideVelocityX = false;
+    bool override_velx = true;
+    bool override_gravity = false;
+    bool override_physics = false;
     public bool DrawDebug;
 
     protected Rigidbody2D rb2d;
@@ -29,7 +31,8 @@ public class CustomPhysicsObject : MonoBehaviour {
     float max_tether_length;
     float facing = -1f;
     bool is_tethered;
-    public bool is_grounded;
+    bool is_grounded;
+    bool is_sliding;
 
     Vector2 db_result_force;
     Vector2 db_velocity;
@@ -49,6 +52,14 @@ public class CustomPhysicsObject : MonoBehaviour {
     public bool IsGrounded{
         get { return is_grounded; }
     }
+    public bool OverrideVelocityX {
+        get { return override_velx; }
+        set { override_velx = value; }
+    }
+    public bool OverrideGravity {
+        get { return override_gravity; }
+        set { override_gravity = value; }
+    }
 
     public void setTetherPoint(Vector2 point, float max) {
         tether_point = point;
@@ -59,9 +70,16 @@ public class CustomPhysicsObject : MonoBehaviour {
         db_result_force = Vector2.zero;
         db_tether_force = Vector2.zero;
         //db_velocity = Vector2.zero;
-        db_vel_proj = Vector2.zero;
+        //db_vel_proj = Vector2.zero;
 
         is_tethered = false;
+    }
+
+    public void OverridePhysics(bool over_ride) {
+        override_physics = over_ride;
+        if (over_ride) {
+            velocity = Vector2.zero;
+        }
     }
 
     protected virtual Vector2 setInputAcceleration() {
@@ -98,11 +116,14 @@ public class CustomPhysicsObject : MonoBehaviour {
     }
 
 	void FixedUpdate () {
-        sum_of_forces = Physics2D.gravity;
+        if (override_physics) {
+            return;
+        }
+        sum_of_forces = (override_gravity ? Vector2.zero : Physics2D.gravity);
         if (is_tethered) {
             Vector2 tether = tether_point - rb2d.position;
 
-            if (tether.magnitude > max_tether_length /* && Vector2.Angle(velocity, tether) >= 90*/)
+            if (tether.magnitude > max_tether_length)
             {
                 float grav_angle = Vector2.Angle(Physics2D.gravity, rb2d.position - tether_point) * Mathf.Deg2Rad;
                 float tangent_g = Physics2D.gravity.magnitude * Mass * Mathf.Sin(grav_angle);
@@ -123,15 +144,12 @@ public class CustomPhysicsObject : MonoBehaviour {
         }
         velocity += sum_of_forces * Mass * Time.deltaTime;
 
-        if (OverrideVelocityX)
+        if (override_velx)
         {
-            if (is_tethered && !is_grounded)
+            if ((is_tethered && !is_grounded) || is_sliding)
             {
 
                 velocity += input * Mass * Time.deltaTime;
-
-                //Vector2 inputX = new Vector2(input.x, 0);
-                //velocity += velocity.normalized * inputX.magnitude * Mass * Time.deltaTime;
             }
             else
             {
@@ -154,6 +172,7 @@ public class CustomPhysicsObject : MonoBehaviour {
         db_result_force = sum_of_forces;
 
         is_grounded = false;
+        is_sliding = false;
 
         Vector2 x_movement = new Vector2(surface_normal.y, -surface_normal.x); //surface tangent
 
@@ -176,8 +195,8 @@ public class CustomPhysicsObject : MonoBehaviour {
         float dist = dir.magnitude;
         if (dist >= MIN_MOVE_DISTANCE) {
             int count = rb2d.Cast(dir, contact_filter, hits, dist + SHELL_RADIUS);
-            hit_list.Clear();
 
+            hit_list.Clear();
             for (int i = 0; i < count; i++) {
                 hit_list.Add(hits[i]);
                 db_hit_list.Add(hits[i]);
@@ -185,18 +204,33 @@ public class CustomPhysicsObject : MonoBehaviour {
 
             foreach (RaycastHit2D hit in hit_list) {
                 Vector2 normal = hit.normal;
-                if (normal.y > min_ground_normal_y) {
+                if (normal.y > min_ground_normal_y)
+                {
                     is_grounded = true;
-                    if (move_y) {
+                    if (move_y)
+                    {
                         surface_normal = normal;
                         normal.x = 0;
                     }
                 }
+                else {
+                    is_sliding = true;
+                }
+
                 //slows down velocity when object is hit
                 float projection = Vector2.Dot(velocity, normal);
                 if (projection < 0) {
                     velocity = velocity - normal * projection;
                 }
+
+                /*projection = Vector2.Dot(Physics2D.gravity, normal);
+                if (projection < 0)
+                {
+                    if (normal.y < min_ground_normal_y)
+                    {
+                        //is_sliding = true;
+                    }
+                }*/
 
                 float mod_dist = hit.distance - SHELL_RADIUS;
                 dist = mod_dist < dist ? mod_dist : dist;
@@ -216,16 +250,16 @@ public class CustomPhysicsObject : MonoBehaviour {
             for (int i = 0; i < count; i++)
             {
                 hit_list.Add(hits[i]);
-                db_hit_list.Add(hits[i]);
+                //db_hit_list.Add(hits[i]);
             }
 
             foreach (RaycastHit2D hit in hit_list)
             {
                 Vector2 offset;
-                offset.x = hit.normal.x * (0.5f - Mathf.Abs(transform.InverseTransformPoint(hit.point).x) + SHELL_RADIUS);
-                offset.y = hit.normal.y * (0.5f - Mathf.Abs(transform.InverseTransformPoint(hit.point).y) + SHELL_RADIUS);
+                offset.x = hit.normal.x;// * (0.5f - Mathf.Abs(transform.InverseTransformPoint(hit.point).x) + SHELL_RADIUS);
+                offset.y = hit.normal.y;// * (0.5f - Mathf.Abs(transform.InverseTransformPoint(hit.point).y) + SHELL_RADIUS);
 
-                rb2d.position += offset;
+                rb2d.position += offset * 0.05f;
             }
             loops++;
         } while (count != 0 && loops < 30);
@@ -235,13 +269,13 @@ public class CustomPhysicsObject : MonoBehaviour {
         if (rb2d != null && DrawDebug)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(rb2d.position, rb2d.position + Physics2D.gravity);
+           // Gizmos.DrawLine(rb2d.position, rb2d.position + Physics2D.gravity);
 
             Gizmos.color = Color.blue;
-            Gizmos.DrawLine(rb2d.position, rb2d.position + db_tether_force);
+           // Gizmos.DrawLine(rb2d.position, rb2d.position + db_tether_force);
 
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(rb2d.position, rb2d.position + db_result_force);
+           // Gizmos.DrawLine(rb2d.position, rb2d.position + db_result_force);
 
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(rb2d.position, rb2d.position + db_velocity);
@@ -258,6 +292,9 @@ public class CustomPhysicsObject : MonoBehaviour {
                 Gizmos.color = Color.green;
                 Gizmos.DrawLine(hit.point, hit.point + hit.normal);
             }
+
+            Gizmos.color = IsGrounded ? Color.green : Color.red;
+           // Gizmos.DrawCube(transform.position, new Vector3(0.4f, 0.4f, 1f));
         }
 
         onDrawGizmos();

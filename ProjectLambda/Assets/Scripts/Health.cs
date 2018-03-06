@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Health : MonoBehaviour {
+[System.Serializable]
+public class Health {
     public int max_health = 100;
     int current_health;
 
@@ -12,7 +13,7 @@ public class Health : MonoBehaviour {
     public event HealthDamagedEvent OnHealthDamaged;
     public event DeathEvent OnCharacterDeath;
 
-    void Start() {
+    public Health() {
         current_health = max_health;
     }
 
