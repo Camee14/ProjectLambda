@@ -206,6 +206,7 @@ public class Player : CustomPhysicsObject
         Debug.Log("you have died");
         transform.position = respawn_point;
         health.reset();
+        GetComponent<TrailRenderer>().Clear();
     }
     void basicAttack()
     {
