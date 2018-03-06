@@ -37,7 +37,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1718609691138620}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 19.3, y: 28.84, z: -0.453125}
+  m_LocalPosition: {x: 4.6, y: 10.8, z: -0.453125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -59,7 +59,7 @@ Rigidbody2D:
   m_AngularDrag: 0.05
   m_GravityScale: 1
   m_Material: {fileID: 0}
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
@@ -89,11 +89,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335b29810b066784886377ebd6d7b141, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Alert: 0
   VisibilityRange: 10
   Speed: 5
   Frequency: 3
   Magnitude: 1.5
+  MaxChildren: 3
+  satelite_prefab: {fileID: 1672921721973484, guid: 0354b9d8d65b56f498af7fb184a9e38e,
+    type: 2}
 --- !u!212 &212723696036152934
 SpriteRenderer:
   m_ObjectHideFlags: 1

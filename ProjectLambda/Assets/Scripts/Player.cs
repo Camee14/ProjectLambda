@@ -3,41 +3,48 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : ScriptablePhysicsObject
+public class Player : CustomPhysicsObject
 {
-    public float move_speed = 7f;
-    public float jump_force = 7f;
+    public float MovementSpeed = 7f;
+    public float JumpForce = 7f;
 
-    public float grapple_speed = 10f;
-    public float swing_force = 20f;
     public float RespawnY = -250f;
 
+    public Health health = new Health();
     public Grapple grapple;
 
     Health health;
     public Vector3 respawn_point;
     //made that public so I could make sure the checkpoints were working
 
+    LongButtonPressDetector detector;
+
+    ContactFilter2D dash_contact_filter;
+    LayerMask enemy_mask;
+
     bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
+    bool interupt_action = false;
 
     protected override void awake()
     {
         base.awake();
 
-        addAction("Basic Attack", new BasicAttack(this));
-        addAction("Grapple Leap Attack", new GrappleLeapAttack(this));
-        addAction("Ground Slam Attack", new GroundSlamAttack(this));
+        detector = new LongButtonPressDetector();
 
-        health = GetComponent<Health>();
+        enemy_mask = LayerMask.GetMask("Enemy");
+
+        dash_contact_filter.useTriggers = false;
+        dash_contact_filter.SetLayerMask(enemy_mask);
+        dash_contact_filter.useLayerMask = true;
+
         health.OnHealthDamaged += healthDamaged;
         health.OnCharacterDeath += die;
 
-        //QualitySettings.vSyncCount = 0;
-        //Application.targetFrameRate = 30;
-
         respawn_point = transform.position;
+
+        grapple.setParent(this);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -53,31 +60,67 @@ public class Player : ScriptablePhysicsObject
     {
         base.update();
 
-        if (Input.GetButtonDown("Attack 1"))
+        if (detector.longPress("Attack 1"))
         {
-            if (grapple.isGrappleConnectedToEnemy)
+            setBulletTime(true);
+            OverrideVelocityX = false;
+            Vector2 aim = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            if (Input.GetButtonUp("Attack 1"))
             {
-                startAction("Grapple Leap Attack", false);
+                StartCoroutine(doDashAttack(aim));
+                setBulletTime(false);
+            }
+
+        }
+        else if (detector.shortPress("Attack 1")) {
+            basicAttack();
+        }
+
+        /*if (!grapple.isGrappleConnected)
+        {
+            if (detector.longPress("Attack 3"))
+            {
+                setBulletTime(true);
+                OverrideVelocityX = false;
+
+                grapple.aim(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
+                if (Input.GetButtonUp("Attack 3"))
+                {
+                    grapple.fire();
+                    setBulletTime(false);
+                    OverrideVelocityX = true;
+                }
+            }
+            else if (detector.shortPress("Attack 3"))
+            {
+                grapple.fire();
+            }
+
+        }*/
+        if (Input.GetButtonDown("Attack 2")) {
+            interupt_action = false;
+            StartCoroutine(doGroundSlam());
+        }
+        if (Input.GetButtonUp("Attack 2")) {
+            interupt_action = true;
+        }
+
+        if (Input.GetButtonDown("Attack 3"))
+        {
+            if (grapple.isGrappleConnected)
+            {
+                grapple.detach();
             }
             else
             {
-                startAction("Basic Attack", false);
-               
-            }
-        }
-        if (Input.GetButtonDown("Attack 2")) {
-            if (!IsGrounded && !grapple.isGrappleConnected)
-            {
-                startAction("Ground Slam Attack", false);
-            }
-            else if (grapple.isGrappleConnectedToEnemy) {
-                
+                grapple.fire();
             }
         }
 
         if (transform.position.y < RespawnY) {
             health.instakill();
         }
+        detector.Update();
     }
     protected override void fixedUpdate()
     {
@@ -91,6 +134,7 @@ public class Player : ScriptablePhysicsObject
         {
             releaseTether();
         }
+
     }
     protected override Vector2 setInputAcceleration()
     {
@@ -99,7 +143,6 @@ public class Player : ScriptablePhysicsObject
         if (movement_enabled)
         {
             move.x = Input.GetAxis("Horizontal");
-            move.y = Input.GetAxis("Vertical");
         }
         if (jump_enabled)
         {
@@ -107,19 +150,15 @@ public class Player : ScriptablePhysicsObject
             {
                 if (IsGrounded)
                 {
-                    Velocity = new Vector2(Velocity.x, jump_force);
+                    Velocity = new Vector2(Velocity.x, JumpForce);
                 }
                 else if (grapple.isGrappleConnected)
                 {
-                    grapple.detachGrapple();
+                    grapple.detach();
                     releaseTether();
                     if (Velocity.magnitude <= 1f)
                     {
-                        Velocity = new Vector2(Velocity.x, jump_force);
-                    }
-                    else
-                    {
-                        //Velocity += move * jump_force;
+                        Velocity = new Vector2(Velocity.x, JumpForce);
                     }
                     did_grapple_jump = true;
                 }
@@ -136,7 +175,18 @@ public class Player : ScriptablePhysicsObject
                 }
             }
         }
-        return move * move_speed;
+        return move * MovementSpeed;
+    }
+    protected override void onDrawGizmos()
+    {
+        base.onDrawGizmos();
+
+        //Gizmos.color = Color.red;
+        //Gizmos.DrawWireCube(transform.position + transform.right * Facing, new Vector3(3f, 1f, 1f));
+    }
+    void setBulletTime(bool enabled) {
+        Time.timeScale = (enabled ? 0.05f : 1f);
+        Time.fixedDeltaTime = 0.02F * Time.timeScale;
     }
     void canUseAllControls(bool enabled) {
         canUseMovementControls(enabled);
@@ -158,157 +208,106 @@ public class Player : ScriptablePhysicsObject
         transform.position = respawn_point;
         health.reset();
     }
-    /*
-    WIP: function slows down game speed to the value of param floor.
-    better alternative may be to slow down only player and affected entities.
-    */
-    IEnumerator doHitPause(float floor, float rate) {
-        while (Time.timeScale > floor)
-        {
-            Time.timeScale = Mathf.Clamp(Time.timeScale - rate * Time.unscaledDeltaTime, floor, 1f);
-            yield return null;
-        }
-        Time.timeScale = 1f;
-    }
-    protected override void onDrawGizmos()
+    void basicAttack()
     {
-        base.onDrawGizmos();
-
-        //Gizmos.color = Color.red;
-       // Gizmos.DrawWireCube(transform.position + transform.right * Facing, new Vector3(3f, 1f, 1f));
-    }
-
-    private class BasicAttack : ScriptableAction {
-        public BasicAttack(ScriptablePhysicsObject p) : base(p)
+        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + transform.right * Facing, new Vector2(3f, 1), 0f, enemy_mask);
+        if (cols.Length != 0)
         {
-
-        }
-        public override void startAction(){
-
-        }
-        public override bool continueAction() {
-            LayerMask mask = LayerMask.GetMask("Enemy");
-            Collider2D[] cols = Physics2D.OverlapBoxAll(parent.transform.position + parent.transform.right * parent.Facing, new Vector2(3f, 1), 0f, mask);
-            if (cols.Length != 0)
+            foreach (Collider2D col in cols)
             {
-                foreach (Collider2D col in cols)
-                {
-                    TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
-                    if (tab != null)
-                    {
-                        if (!tab.IsStunned)
-                        {
-                            tab.doAttackBehaviour(parent.transform.position, 8f);
-                        }
-                    }
-                }
-                ((Player)parent).StartCoroutine(((Player)parent).doHitPause(0.1f, 3f));
-            }
-            return true;
-        }
-        public override void endAction() {
-
-        }
-        public override void interuptAction() {
-
-        }
-    }
-    private class GrappleLeapAttack : ScriptableAction
-    {
-        public GrappleLeapAttack(ScriptablePhysicsObject p) : base(p)
-        {
-
-        }
-        public override void startAction()
-        {
-            ((Player)parent).canUseAllControls(false);
-        }
-        public override bool continueAction()
-        {
-            ((Player)parent).rb2d.position = Vector3.Lerp(parent.transform.position, ((Player)parent).grapple.GrappleTarget.position, 14f * Time.deltaTime);
-
-            if ((((Player)parent).grapple.GrappleTarget.position - parent.transform.position).magnitude <= 1f)
-            {
-                ((Player)parent).grapple.detachGrapple();
-                TempAttackedBehaviour tab = ((Player)parent).grapple.GrappleTarget.GetComponent<TempAttackedBehaviour>();
+                TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
                 if (tab != null)
                 {
                     if (!tab.IsStunned)
                     {
-                        tab.doAttackBehaviour(parent.transform.position, 12f);
+                        tab.doAttackBehaviour(transform.position, 8f);
                     }
                 }
-                return true;
             }
-            return false;
-        }
-        public override void endAction()
-        {
-            ((Player)parent).canUseAllControls(true);
-        }
-        public override void interuptAction()
-        {
-            ((Player)parent).canUseAllControls(true);
         }
     }
-    private class GroundSlamAttack : ScriptableAction
-    {
-        int multiplier = 10;
-        public GroundSlamAttack(ScriptablePhysicsObject p) : base(p)
-        {
+    IEnumerator doDashAttack(Vector2 dir) {
+        OverrideGravity = true;
 
-        }
-        public override void startAction()
-        {
-            parent.Mass *= multiplier;
-        }
-        public override bool continueAction()
-        {
-            if (!parent.IsGrounded) {
-                return false;
-            }
-            //do ground attack;
-            LayerMask mask = LayerMask.GetMask("Enemy");
-            Collider2D[] cols = Physics2D.OverlapCircleAll(parent.transform.position, 10f, mask);
-            foreach (Collider2D col in cols) {
-                TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
-                if (tab != null) {
-                    float mag = 1f - ((col.transform.position - parent.transform.position).magnitude / 10f);
-                    tab.doAttackBehaviour(parent.transform.position, 16f * mag);
+        Velocity = dir.normalized * 80f;
+
+        Collider2D[] cols = new Collider2D[16];
+        float timer = 0f;
+        while (timer <= 0.14f) {
+            int count = rb2d.OverlapCollider(dash_contact_filter, cols);
+            for (int i = 0; i < count; i++) {
+                TempAttackedBehaviour tab = cols[i].GetComponent<TempAttackedBehaviour>();
+                if (tab != null)
+                {
+                    if (!tab.IsStunned)
+                    {
+                        tab.doAttackBehaviour(transform.position, 18f);
+                    }
                 }
             }
-            return true;
+            timer += Time.deltaTime;
+            yield return null;
         }
-        public override void endAction()
-        {
-            parent.Mass = parent.Mass / multiplier;
-        }
-        public override void interuptAction()
-        {
-            parent.Mass = parent.Mass / multiplier;
-        }
+        Velocity = dir.normalized * 10f;
+
+        OverrideGravity = false;
+        OverrideVelocityX = true;
     }
-    private class GrappleSlam : ScriptableAction
+    IEnumerator doGroundSlam() {
+        float multiplier = 10f;
+
+        Mass *= multiplier;
+        canUseAllControls(false);
+
+        while (!IsGrounded && !interupt_action)
+        {
+            Collider2D[] cols = new Collider2D[16];
+            int count = rb2d.OverlapCollider(dash_contact_filter, cols);
+            for (int i = 0; i < count; i++)
+            {
+                TempAttackedBehaviour tab = cols[i].GetComponent<TempAttackedBehaviour>();
+                if (tab != null)
+                {
+                    //pick up enemies
+                }
+            }
+            yield return null;
+        }
+
+        if (!interupt_action)
+        {
+            Collider2D[] cols = Physics2D.OverlapCircleAll(transform.position, 10f, enemy_mask);
+            foreach (Collider2D col in cols)
+            {
+                TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
+                if (tab != null)
+                {
+                    float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
+                    tab.doAttackBehaviour(transform.position, 16f * mag);
+                }
+            }
+        }
+        else {
+            Velocity = Vector2.zero;
+        }
+
+        Mass = Mass / multiplier;
+        canUseAllControls(true);
+    }
+    /*
+        WIP: function slows down game speed to the value of param floor.
+        better alternative may be to slow down only player and affected entities.
+    */
+    IEnumerator doHitPause(float floor, float rate)
     {
-        public GrappleSlam(ScriptablePhysicsObject p) : base(p)
+        while (Time.timeScale > floor)
         {
+            Time.timeScale = Mathf.Clamp(Time.timeScale - rate * Time.unscaledDeltaTime, floor, 1f);
+            Time.fixedDeltaTime = 0.02F * Time.timeScale;
+            yield return null;
         }
-        public override void startAction()
-        {
-            
-        }
-        public override bool continueAction()
-        {
-            return true;
-        }
-        public override void endAction()
-        {
-            
-        }
-        public override void interuptAction()
-        {
-            
-        }
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02F * Time.timeScale;
     }
 }
 

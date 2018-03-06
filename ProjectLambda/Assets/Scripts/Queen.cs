@@ -10,11 +10,14 @@ public class Queen : MonoBehaviour {
     public float Speed = 5f;
     public float Frequency = 3f;
     public float Magnitude = 1.5f;
+    public int MaxChildren = 3;
 
-    //public float MaxChildren = 3;
+    public GameObject satelite_prefab;
 
     GameObject player;
-    //GameObject[] children;
+
+    int num_children;
+    GameObject[] children;
 
     Rigidbody2D rb2d;
     Vector2 target_pos;
@@ -25,32 +28,56 @@ public class Queen : MonoBehaviour {
 
     int facing = -1;
     float agro_timer;
+    float child_spawn_timer;
+    float vis_range;
 
     //states
-    bool alert = false;
-    bool attacking = false;
+    bool alert = false; //the enemy has seen the player
+    bool attacking = false; //the enemy is in position to attack
+    bool has_los = false; //enemy has line of sight
 
     void Awake() {
         rb2d = GetComponent<Rigidbody2D>();
         target_pos = true_pos = rb2d.position;
 
         floor_mask = LayerMask.GetMask("Grappleable");
-        player_mask = LayerMask.GetMask("Player");
+        player_mask = LayerMask.GetMask("Player", "Grappleable");
 
         player = GameObject.Find("Player");
+
+        children = new GameObject[MaxChildren];
+
+        child_spawn_timer = 2f;
+        num_children = 0;
+
+        vis_range = VisibilityRange;
 	}
     void Update() {
-
+        if (alert && attacking)
+        {
+            if (child_spawn_timer > 3f && num_children < MaxChildren)
+            {
+                int index = num_children > 0 ? num_children - 1 : 0; 
+                children[index] = Instantiate(satelite_prefab, transform.position + Vector3.left * 3f, Quaternion.identity, transform);
+                num_children++;
+                child_spawn_timer = 0f;
+            }
+            else
+            {
+                child_spawn_timer += Time.deltaTime;
+            }
+        }
     }
     void FixedUpdate() {
-        if (!alert)
+        if (!alert) //if the player hasnt been seen, do idle
         {
             move();
         }
-        else if(alert && !attacking) {
+        else if(alert && !has_los) { //if the player has been seen, but we have lost line of sight, tick down agro
             agro_timer += Time.deltaTime;
             if (agro_timer >= 3f) {
                 alert = false;
+                Debug.Log("go back to idle");
                 agro_timer = 0f;
             }
         }
@@ -84,26 +111,31 @@ public class Queen : MonoBehaviour {
         rb2d.position += offsetY;
     }
     void detect() {
-        RaycastHit2D hit = Physics2D.Raycast(rb2d.position, ((Vector2)player.transform.position) - rb2d.position, VisibilityRange, player_mask);
+        RaycastHit2D hit = Physics2D.Raycast(rb2d.position, ((Vector2)player.transform.position) - rb2d.position, vis_range, player_mask);
         if (hit.collider != null)
         {
             if (!alert && hit.transform.gameObject == player)
             {
                 alert = true;
-                attacking = true;
-
-                VisibilityRange *= 1.3f;
+                has_los = true;
+                vis_range = VisibilityRange * 1.3f;
+                Debug.Log("target aquired");
 
                 StartCoroutine(setupAttack());
             }
             else if (alert && hit.transform.gameObject != player)
             {
+                has_los = false;
                 attacking = false;
+                vis_range = VisibilityRange / 1.3f;
+                Debug.Log("target lost");
             }
         }
         else if(hit.collider == null && attacking) {
+            has_los = false;
             attacking = false;
-            VisibilityRange = VisibilityRange / 1.3f;
+            vis_range = VisibilityRange / 1.3f;
+            Debug.Log("cleanup");
         }
     }
     IEnumerator setupAttack() {
@@ -130,5 +162,7 @@ public class Queen : MonoBehaviour {
             rb2d.position = Vector2.MoveTowards(rb2d.position, ground, Speed * 1.5f * Time.deltaTime);
             yield return null;
         }
+        attacking = true;
+        Debug.Log("ready to attack");
     }
 }
