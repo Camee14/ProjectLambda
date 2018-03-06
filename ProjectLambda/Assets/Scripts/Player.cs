@@ -13,8 +13,11 @@ public class Player : CustomPhysicsObject
     public Health health = new Health();
     public Grapple grapple;
 
+    Health health;
+    public Vector3 respawn_point;
+    //made that public so I could make sure the checkpoints were working
+
     LongButtonPressDetector detector;
-    Vector3 respawn_point;
 
     ContactFilter2D dash_contact_filter;
     LayerMask enemy_mask;
@@ -43,6 +46,16 @@ public class Player : CustomPhysicsObject
 
         grapple.setParent(this);
     }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        //just sets the respawn point to the position of the last checkpoint reached
+        if (other.tag == "CheckPoint")
+        {
+            respawn_point = other.transform.position;
+        }
+    }
+
     protected override void update()
     {
         base.update();

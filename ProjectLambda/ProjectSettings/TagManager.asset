@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Grappleable
   - Enemy
+  - CheckPoint
   - Terrain
   layers:
   - Default
