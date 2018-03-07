@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InControl;
 
 public class Player : CustomPhysicsObject
 {
@@ -20,6 +21,8 @@ public class Player : CustomPhysicsObject
 
     ContactFilter2D dash_contact_filter;
     LayerMask enemy_mask;
+
+    private InputDevice Controller;  
 
     bool did_grapple_jump = false;
     bool movement_enabled = true;
@@ -59,6 +62,8 @@ public class Player : CustomPhysicsObject
     {
         base.update();
 
+        Controller = InputManager.ActiveDevice;
+
         if (detector.longPress("Attack 1"))
         {
             setBulletTime(true);
@@ -96,7 +101,7 @@ public class Player : CustomPhysicsObject
             }
 
         }*/
-        if (Input.GetButtonDown("Attack 2")) {
+        if (/*Input.GetButtonDown("Attack 2"))*/ Controller.Action4.WasPressed) {
             interupt_action = false;
             StartCoroutine(doGroundSlam());
         }
@@ -104,7 +109,7 @@ public class Player : CustomPhysicsObject
             interupt_action = true;
         }
 
-        if (Input.GetButtonDown("Attack 3"))
+        if (/*Input.GetButtonDown("Attack 3") ||*/ Controller.Action3.WasPressed)
         {
             if (grapple.isGrappleConnected)
             {
@@ -145,7 +150,7 @@ public class Player : CustomPhysicsObject
         }
         if (jump_enabled)
         {
-            if (Input.GetButtonDown("Jump"))
+            if (/*Input.GetButtonDown("Jump") ||*/ Controller.Action1.IsPressed)
             {
                 if (IsGrounded)
                 {
@@ -162,7 +167,7 @@ public class Player : CustomPhysicsObject
                     did_grapple_jump = true;
                 }
             }
-            else if (Input.GetButtonUp("Jump"))
+            else if (/*Input.GetButtonUp("Jump")*/ Controller.Action1.WasReleased)
             {
                 if (did_grapple_jump)
                 {
