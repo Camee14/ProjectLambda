@@ -109,7 +109,7 @@ public class Player : CustomPhysicsObject
             interupt_action = true;
         }
 
-        if (/*Input.GetButtonDown("Attack 3") ||*/ Controller.Action3.WasPressed)
+        if (/*Input.GetButtonDown("Attack 3") ||*/ Controller.Action2.WasPressed)
         {
             if (grapple.isGrappleConnected)
             {
