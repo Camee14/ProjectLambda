@@ -12,6 +12,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     public float Mass = 1f;
     public float min_ground_normal_y = 0.65f;
     public float MaxVelocity = 10f;
+    bool override_auto_facing = false;
     bool override_velx = true;
     bool override_gravity = false;
     bool override_physics = false;
@@ -47,6 +48,7 @@ public class CustomPhysicsObject : MonoBehaviour {
 
     public float Facing {
         get { return facing; }
+        set { facing = value; }
     }
 
     public bool IsGrounded{
@@ -59,6 +61,10 @@ public class CustomPhysicsObject : MonoBehaviour {
     public bool OverrideGravity {
         get { return override_gravity; }
         set { override_gravity = value; }
+    }
+    public bool OverrideAutoFacing {
+        get { return override_auto_facing; }
+        set { override_auto_facing = value; }
     }
 
     public void setTetherPoint(Vector2 point, float max) {
@@ -109,7 +115,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     void Update() {
         update();
         input = setInputAcceleration();
-        if (input.x != 0)
+        if (!OverrideAutoFacing && input.x != 0)
         {
             facing = input.x > 0f ? 1f : -1f;
         }
