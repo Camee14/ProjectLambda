@@ -4,13 +4,15 @@ using UnityEngine;
 /**
  * sin wave tutorial from: https://answers.unity.com/questions/803434/how-to-make-projectile-to-shoot-in-a-sine-wave-pat.html
  * **/
-public class Queen : MonoBehaviour {
+public class Queen : MonoBehaviour, IAttackable {
 
     public float VisibilityRange = 10f;
     public float Speed = 5f;
     public float Frequency = 3f;
     public float Magnitude = 1.5f;
     public int MaxChildren = 3;
+
+    public AIFlag PatrolBoundary;
 
     public GameObject satelite_prefab;
 
@@ -92,9 +94,11 @@ public class Queen : MonoBehaviour {
     }
 	void move() {
         true_pos = Vector2.MoveTowards(true_pos, target_pos, Speed * Time.deltaTime);
+
+        Vector2 proj = rb2d.position + Vector2.right * facing;
         if (true_pos.x == target_pos.x)
         {
-            RaycastHit2D hit = Physics2D.Raycast(transform.position + Vector3.right * facing, Vector2.down, 10f, floor_mask);
+            RaycastHit2D hit = Physics2D.Raycast(proj, Vector2.down, 10f, floor_mask);
             if (hit.collider != null)
             {
                 target_pos = hit.point;
@@ -106,6 +110,10 @@ public class Queen : MonoBehaviour {
             }
         }
         rb2d.position = true_pos;
+
+        if (!PatrolBoundary.isInBoundary(proj)) {
+            facing *= -1;
+        }
 
         Vector2 offsetY = new Vector2(0, Mathf.Sin(Time.time * Frequency) * Magnitude);
         rb2d.position += offsetY;
@@ -137,6 +145,15 @@ public class Queen : MonoBehaviour {
             vis_range = VisibilityRange / 1.3f;
             Debug.Log("cleanup");
         }
+    }
+    public bool isStunned() {
+        return false;
+    }
+    public bool isInvincible() {
+        return false;
+    }
+    public void attack(int dmg, Vector2 dir, float pow, float stun_time = 0f) {
+
     }
     IEnumerator setupAttack() {
         RaycastHit2D hit_up = Physics2D.Raycast(rb2d.position, Vector2.up, 10f, floor_mask);

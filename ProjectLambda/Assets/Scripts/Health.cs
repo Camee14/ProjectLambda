@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class Health {
-    public int max_health = 100;
+public class Health : MonoBehaviour {
+    public int MaxHealth = 100;
     int current_health;
 
     public delegate void HealthDamagedEvent(int hp, int max);
@@ -14,22 +13,22 @@ public class Health {
     public event DeathEvent OnCharacterDeath;
 
     public Health() {
-        current_health = max_health;
+        current_health = MaxHealth;
     }
 
     public void apply(int ammount) {
-        current_health = Mathf.Clamp(current_health += ammount, 0, max_health);
+        current_health = Mathf.Clamp(current_health += ammount, 0, MaxHealth);
         if (OnCharacterDeath != null && current_health == 0)
         {
             OnCharacterDeath();
         }
         else if (OnHealthDamaged != null) {
-            OnHealthDamaged(current_health, max_health);
+            OnHealthDamaged(current_health, MaxHealth);
         }
 
     }
     public void reset() {
-        current_health = max_health;
+        current_health = MaxHealth;
     }
     public void instakill() {
         current_health = 0;
