@@ -1,35 +1,38 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InControl;
 
 public class LongButtonPressDetector {
     public float threshold = 0.3f;
-    public string[] Axies = { "Attack 1", "Attack 3" };
 
-    Dictionary<string, float> timers;
+    List<InputControlType> listen_to;
+    Dictionary<InputControlType, float> timers;
 
-    public LongButtonPressDetector() {
-        timers = new Dictionary<string, float>();
+    public LongButtonPressDetector(params InputControlType[] controls) {
+        timers = new Dictionary<InputControlType, float>();
+        listen_to = new List<InputControlType>();
 
-        foreach (string s in Axies) {
-            timers.Add(s, 0f);
+        foreach (InputControlType c in controls) {
+            listen_to.Add(c);
+            timers.Add(c, 0f);
         }
     }
 	public void Update () {
-        for(int i = 0; i < Axies.Length; i++) {
-            if (Input.GetButton(Axies[i])) {
-                timers[Axies[i]] += Time.unscaledDeltaTime;
+        foreach (InputControlType c in listen_to) {
+            if (InputManager.ActiveDevice.GetControl(c).IsPressed) {
+                timers[c] += Time.unscaledDeltaTime;
             }
 
-            if (Input.GetButtonUp(Axies[i])) {
-                timers[Axies[i]] = 0f;
+            if (InputManager.ActiveDevice.GetControl(c).WasReleased) {
+                timers[c] = 0f;
             }
         }
 	}
-    public bool longPress(string s) {
-        return timers[s] > threshold;
+    public bool longPress(InputControlType c) {
+        return timers[c] > threshold;
     }
-    public bool shortPress(string s) {
-        return Input.GetButtonUp(s) && timers[s] < threshold;
+    public bool shortPress(InputControlType c) {
+        return InputManager.ActiveDevice.GetControl(c).WasReleased && timers[c] < threshold;
     }
 }

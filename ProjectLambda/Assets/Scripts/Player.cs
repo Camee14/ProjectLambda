@@ -22,8 +22,6 @@ public class Player : CustomPhysicsObject
     ContactFilter2D dash_contact_filter;
     LayerMask enemy_mask;
 
-    private InputDevice Controller;  
-
     bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
@@ -33,7 +31,7 @@ public class Player : CustomPhysicsObject
     {
         base.awake();
 
-        detector = new LongButtonPressDetector();
+        detector = new LongButtonPressDetector(InputControlType.Action3, InputControlType.Action2);
 
         enemy_mask = LayerMask.GetMask("Enemy");
 
@@ -43,6 +41,8 @@ public class Player : CustomPhysicsObject
 
         health.OnHealthDamaged += healthDamaged;
         health.OnCharacterDeath += die;
+
+        InputManager.OnActiveDeviceChanged += onActiveDeviceChanged;
 
         respawn_point = transform.position;
 
@@ -62,54 +62,30 @@ public class Player : CustomPhysicsObject
     {
         base.update();
 
-        Controller = InputManager.ActiveDevice;
-
-        if (detector.longPress("Attack 1"))
+        if (detector.longPress(InputControlType.Action3))
         {
             setBulletTime(true);
             OverrideVelocityX = false;
-            Vector2 aim = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-            if (Input.GetButtonUp("Attack 1"))
+            if (InputManager.ActiveDevice.Action3.WasReleased)
             {
-                StartCoroutine(doDashAttack(aim));
+                StartCoroutine(doDashAttack(getAimDir()));
                 setBulletTime(false);
             }
 
         }
-        else if (detector.shortPress("Attack 1")) {
+        else if (detector.shortPress(InputControlType.Action3)) {
             basicAttack();
         }
 
-        /*if (!grapple.isGrappleConnected)
-        {
-            if (detector.longPress("Attack 3"))
-            {
-                setBulletTime(true);
-                OverrideVelocityX = false;
-
-                grapple.aim(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
-                if (Input.GetButtonUp("Attack 3"))
-                {
-                    grapple.fire();
-                    setBulletTime(false);
-                    OverrideVelocityX = true;
-                }
-            }
-            else if (detector.shortPress("Attack 3"))
-            {
-                grapple.fire();
-            }
-
-        }*/
-        if (/*Input.GetButtonDown("Attack 2"))*/ Controller.Action4.WasPressed) {
+        if (InputManager.ActiveDevice.Action4.WasPressed) {
             interupt_action = false;
             StartCoroutine(doGroundSlam());
         }
-        if (Input.GetButtonUp("Attack 2")) {
+        if (InputManager.ActiveDevice.Action4.WasReleased) {
             interupt_action = true;
         }
 
-        if (/*Input.GetButtonDown("Attack 3") ||*/ Controller.Action2.WasPressed)
+        if (InputManager.ActiveDevice.Action2.WasPressed)
         {
             if (grapple.isGrappleConnected)
             {
@@ -119,6 +95,20 @@ public class Player : CustomPhysicsObject
             {
                 grapple.fire();
             }
+        }
+
+        if (OverrideAutoFacing)
+        {
+            float dir = transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).x;
+            if (dir >= 0)
+            {
+                dir = 1f;
+            }
+            else
+            {
+                dir = -1f;
+            }
+            Facing = dir;
         }
 
         if (transform.position.y < RespawnY) {
@@ -146,11 +136,11 @@ public class Player : CustomPhysicsObject
 
         if (movement_enabled)
         {
-            move.x = Input.GetAxis("Horizontal");
+            move.x = InputManager.ActiveDevice.LeftStickX.Value;
         }
         if (jump_enabled)
         {
-            if (/*Input.GetButtonDown("Jump") ||*/ Controller.Action1.IsPressed)
+            if (InputManager.ActiveDevice.Action1.IsPressed)
             {
                 if (IsGrounded)
                 {
@@ -167,7 +157,7 @@ public class Player : CustomPhysicsObject
                     did_grapple_jump = true;
                 }
             }
-            else if (/*Input.GetButtonUp("Jump")*/ Controller.Action1.WasReleased)
+            else if (InputManager.ActiveDevice.Action1.WasReleased)
             {
                 if (did_grapple_jump)
                 {
@@ -212,6 +202,13 @@ public class Player : CustomPhysicsObject
         transform.position = respawn_point;
         health.reset();
         GetComponent<TrailRenderer>().Clear();
+    }
+    void onActiveDeviceChanged(InputDevice active) {
+        OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
+        Debug.Log(active.Name + " " + OverrideAutoFacing);
+    }
+    Vector2 getAimDir() {
+        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).normalized : InputManager.ActiveDevice.LeftStick.Vector;
     }
     void basicAttack()
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using InControl;
 
 public class Grapple : MonoBehaviour {
 
@@ -30,7 +31,6 @@ public class Grapple : MonoBehaviour {
     public bool isGrappleConnectedToEnemy {
         get { return grapple_connected && grapple_target.tag == "Enemy"; }
     }
-
     public float MaxLength {
         get { return current_wire_length; }
     }
@@ -85,34 +85,7 @@ public class Grapple : MonoBehaviour {
          if (!grapple_connected)
          {
              Vector2 dir = getAimDir();
-
-             RaycastHit2D hit;
-             if (SoftLockOn)
-             {
-                 float angle = 0f;
-                 do
-                 {
-                     float rads = angle * Mathf.Deg2Rad;
-                     Vector2 positive_dir;
-                     positive_dir.x = dir.x * Mathf.Cos(rads) - dir.y * Mathf.Sin(rads);
-                     positive_dir.y = dir.x * Mathf.Sin(rads) + dir.y * Mathf.Cos(rads);
-
-                     hit = Physics2D.Raycast(transform.position, positive_dir, MaxWireLength, grapple_mask);
-                     if (hit.collider == null)
-                     {
-                         Vector2 negative_dir;
-                         negative_dir.x = dir.x * Mathf.Cos(-rads) - dir.y * Mathf.Sin(-rads);
-                         negative_dir.y = dir.x * Mathf.Sin(-rads) + dir.y * Mathf.Cos(-rads);
-
-                         hit = Physics2D.Raycast(transform.position, negative_dir, MaxWireLength, grapple_mask);
-                     }
-                     angle++;
-                 } while (hit.collider == null && angle <= 30f);
-             }
-             else
-             {
-                 hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
-             }
+             RaycastHit2D hit = getTarget(dir);
 
              if (hit.collider != null)
              {
@@ -136,12 +109,35 @@ public class Grapple : MonoBehaviour {
     Vector2 getAimDir() {
         return (man_aim_dir != Vector2.zero ? man_aim_dir : Vector2.up + (Vector2.right * parent.Facing)).normalized;
     }
-    IEnumerator doReelIn() {
-        parent.OverridePhysics(true);
+    RaycastHit2D getTarget(Vector2 dir) {
+        RaycastHit2D hit;
+        if (SoftLockOn)
+        {
+            float angle = 0f;
+            do
+            {
+                float rads = angle * Mathf.Deg2Rad;
+                Vector2 positive_dir;
+                positive_dir.x = dir.x * Mathf.Cos(rads) - dir.y * Mathf.Sin(rads);
+                positive_dir.y = dir.x * Mathf.Sin(rads) + dir.y * Mathf.Cos(rads);
 
-        yield return null;
+                hit = Physics2D.Raycast(transform.position, positive_dir, MaxWireLength, grapple_mask);
+                if (hit.collider == null)
+                {
+                    Vector2 negative_dir;
+                    negative_dir.x = dir.x * Mathf.Cos(-rads) - dir.y * Mathf.Sin(-rads);
+                    negative_dir.y = dir.x * Mathf.Sin(-rads) + dir.y * Mathf.Cos(-rads);
 
-        parent.OverridePhysics(false);
+                    hit = Physics2D.Raycast(transform.position, negative_dir, MaxWireLength, grapple_mask);
+                }
+                angle++;
+            } while (hit.collider == null && angle <= 30f);
+        }
+        else
+        {
+            hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
+        }
+        return hit;
     }
     void OnDrawGizmos()
     {
