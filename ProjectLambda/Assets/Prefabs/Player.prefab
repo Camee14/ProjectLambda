@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 61129154963177482}
   - component: {fileID: 96143622720990572}
   - component: {fileID: 114861918270975176}
+  - component: {fileID: 114968467724419896}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -103,7 +104,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1717649321546534}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7.5600004, y: 6.8500004, z: 0}
+  m_LocalPosition: {x: -6.505867, y: 6.505867, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 4429438865229946}
@@ -116,7 +117,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -76.4, y: 10.6, z: 0}
+  m_LocalPosition: {x: 16.1, y: 26.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -210,7 +211,7 @@ BoxCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 1, y: 1}
-    newSize: {x: 0.64, y: 0.64}
+    newSize: {x: 4.51, y: 6.33}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
@@ -345,10 +346,23 @@ MonoBehaviour:
   DrawDebug: 0
   MovementSpeed: 12
   JumpForce: 20
+  BasicAttackRate: 0.3
+  MaxHangTime: 0.3
   RespawnY: -250
-  health:
-    max_health: 100
   grapple: {fileID: 114745566186501726}
+  respawn_point: {x: -76.4, y: 10.6, z: 0}
+--- !u!114 &114968467724419896
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1335759214423424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ea447f34b09c44408b3708d418179e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  max_health: 100
 --- !u!120 &120801903166874640
 LineRenderer:
   m_ObjectHideFlags: 1
@@ -502,7 +516,7 @@ SpriteRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 533aa7554d5dd884cbfcff187a122e44, type: 2}
+  - {fileID: 2100000, guid: aa063910078ef5a4883dd1e4efc7d259, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -522,12 +536,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300002, guid: 52b6bf6d6fcf893468ea118816273c03, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 52b6bf6d6fcf893468ea118816273c03, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.64, y: 0.64}
+  m_Size: {x: 4.51, y: 6.33}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

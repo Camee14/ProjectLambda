@@ -7,10 +7,12 @@ public class Player : CustomPhysicsObject
 {
     public float MovementSpeed = 7f;
     public float JumpForce = 7f;
+    public float BasicAttackRate = 3f;
+    public float MaxHangTime = 1f;
 
     public float RespawnY = -250f;
 
-    public Health health = new Health();
+    Health health;
     public Grapple grapple;
 
     public Vector3 respawn_point;
@@ -21,6 +23,11 @@ public class Player : CustomPhysicsObject
     ContactFilter2D dash_contact_filter;
     LayerMask enemy_mask;
 
+    float attack_timer = 0f;
+    float hang_timer = 0f;
+    short basic_attack_count = 0;
+    short attack_charges = 0;
+
     bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
@@ -29,6 +36,8 @@ public class Player : CustomPhysicsObject
     protected override void awake()
     {
         base.awake();
+
+        health = GetComponent<Health>();
 
         detector = new LongButtonPressDetector();
 
@@ -71,8 +80,40 @@ public class Player : CustomPhysicsObject
             }
 
         }
-        else if (detector.shortPress("Attack 1")) {
-            basicAttack();
+        else if (detector.shortPress("Attack 1") && attack_timer <= 0 && basic_attack_count < 4) {
+            basic_attack_count++;
+
+            if (hang_timer > 0 && hang_timer - (MaxHangTime * 0.75) <= 0)
+            {
+                attack_charges++;
+            }
+
+            attack_timer = BasicAttackRate;
+            hang_timer = BasicAttackRate + MaxHangTime;
+
+            OverrideGravity = true;
+            OverrideVelocityX = false;
+            canUseAllControls(false);
+
+            Vector2 dir = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
+            rb2d.position += dir;
+            Velocity = dir;
+
+            doBasicAttack(dir);
+        }
+
+        if (attack_timer > 0) {
+            attack_timer -= Time.deltaTime;
+        }
+        if (hang_timer > 0) {
+            hang_timer -= Time.deltaTime;
+            if (hang_timer <= 0) {
+                OverrideGravity = false;
+                OverrideVelocityX = true;
+                canUseAllControls(true);
+                basic_attack_count = 0;
+                attack_charges = 0;
+            }
         }
 
         /*if (!grapple.isGrappleConnected)
@@ -96,7 +137,7 @@ public class Player : CustomPhysicsObject
             }
 
         }*/
-        if (Input.GetButtonDown("Attack 2")) {
+        if (Input.GetButtonDown("Attack 2") && !IsGrounded) {
             interupt_action = false;
             StartCoroutine(doGroundSlam());
         }
@@ -180,8 +221,15 @@ public class Player : CustomPhysicsObject
     {
         base.onDrawGizmos();
 
-        //Gizmos.color = Color.red;
-        //Gizmos.DrawWireCube(transform.position + transform.right * Facing, new Vector3(3f, 1f, 1f));
+        float percentage = (attack_timer / BasicAttackRate);
+        if (percentage < 0) {
+            percentage = 0;
+        }
+        Gizmos.color = Color.green;
+        Gizmos.DrawCube(transform.position + transform.up * 2, new Vector3(3f * percentage, 1f, 1f));
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(transform.position + transform.up * 2, new Vector3(3f, 1f, 1f));
     }
     void setBulletTime(bool enabled) {
         Time.timeScale = (enabled ? 0.05f : 1f);
@@ -208,19 +256,25 @@ public class Player : CustomPhysicsObject
         health.reset();
         GetComponent<TrailRenderer>().Clear();
     }
-    void basicAttack()
+    void doBasicAttack(Vector2 dir)
     {
-        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + transform.right * Facing, new Vector2(3f, 1), 0f, enemy_mask);
+        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (transform.right * 2) * Facing, new Vector2(3f, 1), 0f, enemy_mask);
         if (cols.Length != 0)
         {
             foreach (Collider2D col in cols)
             {
-                TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
-                if (tab != null)
+                IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
+                if (ab != null)
                 {
-                    if (!tab.IsStunned)
+                    if (dir == Vector2.zero) {
+                        dir = Vector2.right * Facing;
+                    }
+                    if (attack_charges == 3)
                     {
-                        tab.doAttackBehaviour(transform.position, 8f);
+                        ab.attack(0, (dir + Vector2.up).normalized, 12f);
+                    }
+                    else {
+                        ab.attack(20, dir, 4f, 0.5f);
                     }
                 }
             }
@@ -236,12 +290,12 @@ public class Player : CustomPhysicsObject
         while (timer <= 0.14f) {
             int count = rb2d.OverlapCollider(dash_contact_filter, cols);
             for (int i = 0; i < count; i++) {
-                TempAttackedBehaviour tab = cols[i].GetComponent<TempAttackedBehaviour>();
-                if (tab != null)
+                IAttackable ab = cols[i].GetComponent(typeof(IAttackable)) as IAttackable;
+                if (ab != null)
                 {
-                    if (!tab.IsStunned)
+                    if (!ab.isStunned())
                     {
-                        tab.doAttackBehaviour(transform.position, 18f);
+                        ab.attack(0, Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
                     }
                 }
             }
@@ -279,11 +333,11 @@ public class Player : CustomPhysicsObject
             Collider2D[] cols = Physics2D.OverlapCircleAll(transform.position, 10f, enemy_mask);
             foreach (Collider2D col in cols)
             {
-                TempAttackedBehaviour tab = col.GetComponent<TempAttackedBehaviour>();
-                if (tab != null)
+                IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
+                if (ab != null)
                 {
                     float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
-                    tab.doAttackBehaviour(transform.position, 16f * mag);
+                    ab.attack(0, Vector2.up, 16f * mag, 1f);
                 }
             }
         }

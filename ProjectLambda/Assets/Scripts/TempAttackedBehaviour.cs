@@ -9,28 +9,42 @@ public class TempAttackedBehaviour : CustomPhysicsObject {
     public bool IsStunned{
         get { return is_stunned; }
     }
+    protected override void awake()
+    {
+        base.awake();
+
+        OverrideVelocityX = false;
+    }
     protected override void fixedUpdate() {
         base.fixedUpdate();
         if (is_stunned)
         {
-            if (timer >= 0.8f)
+            if (timer > 0)
             {
-                is_stunned = false;
-                timer = 0f;
+                timer -= Time.deltaTime;
+
             }
             else
             {
-                timer += Time.deltaTime;
+                is_stunned = false;
+                OverrideGravity = false;
             }
+            Velocity = Vector2.Lerp(Velocity, Vector2.zero, Velocity.magnitude * Time.deltaTime);
         }
     }
-    public void doAttackBehaviour(Vector2 attacker_pos, float power) {
-        Vector2 dir = new Vector2(transform.position.x - attacker_pos.x, transform.position.y - attacker_pos.y);
-        dir.y += 3f;
-        dir.Normalize();
+    public void knockBack(Vector2 dir, float pow, float stun_time = 0f) {
+        is_stunned = (stun_time > 0);
 
-        Velocity = dir * power;
+        if (is_stunned)
+        {
+            timer = stun_time;
+            OverrideGravity = true;
+        }
+        else {
+            OverrideGravity = false;
+        }
 
-        is_stunned = true;
+        rb2d.position += dir;
+        Velocity = dir * pow;
     }
 }
