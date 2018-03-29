@@ -109,6 +109,9 @@ public class Player : CustomPhysicsObject
         }
         if (hang_timer > 0) {
             hang_timer -= Time.deltaTime;
+            if (InputManager.ActiveDevice.Action1.WasPressed) {
+                hang_timer = 0f;
+            }
             if (hang_timer <= 0) {
                 OverrideGravity = false;
                 OverrideVelocityX = true;
@@ -117,28 +120,6 @@ public class Player : CustomPhysicsObject
                 attack_charges = 0;
             }
         }
-
-        /*if (!grapple.isGrappleConnected)
-        {
-            if (detector.longPress("Attack 3"))
-            {
-                setBulletTime(true);
-                OverrideVelocityX = false;
-
-                grapple.aim(new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
-                if (Input.GetButtonUp("Attack 3"))
-                {
-                    grapple.fire();
-                    setBulletTime(false);
-                    OverrideVelocityX = true;
-                }
-            }
-            else if (detector.shortPress("Attack 3"))
-            {
-                grapple.fire();
-            }
-
-        }*/
         if (InputManager.ActiveDevice.Action4.WasPressed && !IsGrounded) {
             interupt_action = false;
             StartCoroutine(doGroundSlam());
@@ -263,18 +244,22 @@ public class Player : CustomPhysicsObject
         jump_enabled = enabled;
     }
     void healthDamaged(int hp, int max) {
-        Debug.Log("current hp precentage: " + ((float)hp / max) * 100);
+
     }
     void die() {
-        //triggered when player health reaches 0
-        Debug.Log("you have died");
+        grapple.detach();
+
+        OverrideGravity = false;
+        OverrideVelocityX = true;
+        canUseAllControls(true);
+
         transform.position = respawn_point;
+
         health.reset();
         GetComponent<TrailRenderer>().Clear();
     }
     void onActiveDeviceChanged(InputDevice active) {
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
-        Debug.Log(active.Name + " " + OverrideAutoFacing);
     }
     Vector2 getAimDir() {
         return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).normalized : InputManager.ActiveDevice.LeftStick.Vector;
@@ -305,7 +290,7 @@ public class Player : CustomPhysicsObject
     }
     IEnumerator doDashAttack(Vector2 dir) {
         OverrideGravity = true;
-
+        health.Invincibility = true;
         Velocity = dir.normalized * 80f;
 
         Collider2D[] cols = new Collider2D[16];
@@ -329,6 +314,7 @@ public class Player : CustomPhysicsObject
 
         OverrideGravity = false;
         OverrideVelocityX = true;
+        health.Invincibility = false;
     }
     IEnumerator doGroundSlam() {
         float multiplier = 10f;

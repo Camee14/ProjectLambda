@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Walker : CustomPhysicsObject, IAttackable {
+public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     enum State{
-        START,
+        SLEEPING,
         IDLE,
         WALKING,
         MANOEUVRING,
@@ -13,23 +13,24 @@ public class Walker : CustomPhysicsObject, IAttackable {
         DEAD
     };
 
-    public AIFlag PatrolBoundary;
-
+    public GameObject BulletPrefab;
     public float VisibilityRange = 10f;
     public float WalkSpeed = 12f;
     public float MaxGunElevation = 45f;
-    public float FiringPause = 5f;
+    public float MaxGunDepression = -20f;
+    public float MinFiringPause = 3f;
+    public float MaxFiringPause = 5f;
     public float RateOfFire = 0.25f;
     public short NumShotsInBurst = 3;
+    public bool DrawAIDebug = false;
 
     IEnumerator current_coroutine;
-    State current_state = State.START;
+    State current_state = State.SLEEPING;
 
     //transition booleans
     bool in_combat = false;
     bool is_timer_complete = false;
     bool was_attacked = false;
-    bool is_dead = false;
 
     float max_idle = 8f;
     float min_idle = 1f;
@@ -38,22 +39,39 @@ public class Walker : CustomPhysicsObject, IAttackable {
     float current_timer_interval = 0f;
 
     float dir = -1f;
+    bool is_walking = false;
+    bool is_on_edge = false;
+
+    AIFlag PatrolBoundary;
 
     LayerMask ground_mask;
 
     GameObject player;
 
     Health health;
+    ProximityDetector detector;
+
+    Vector2 aim;
+    Vector2 respawn_point;
 
     protected override void awake()
     {
         ground_mask = LayerMask.GetMask("Grappleable");
+
         transitionToState(doIdleState(current_state));
 
         player = GameObject.Find("Player");
 
         health = GetComponent<Health>();
         health.OnCharacterDeath += die;
+
+        detector = GetComponent<ProximityDetector>();
+        detector.onCameraEnter += activateAI;
+        detector.onCameraExit += deactivateAI;
+
+        OverrideAutoFacing = true;
+
+        aim = Vector2.right * Facing;
 
     }
     protected override void update()
@@ -62,6 +80,11 @@ public class Walker : CustomPhysicsObject, IAttackable {
     }
     protected override void fixedUpdate()
     {
+        if (!detector.IsVisible) {
+            return;
+        }
+        Facing = aim.x >= 0 ? 1.0f : -1.0f;
+
         updateTransitionBools();
         checkStateTransitions();
         checkBoundaries();
@@ -70,12 +93,19 @@ public class Walker : CustomPhysicsObject, IAttackable {
     {
         Vector2 input = Vector2.zero;
 
-        if (current_state == State.WALKING && IsGrounded)
+        if (is_walking)
         {
-            input.x = dir;
+            if (current_state == State.WALKING && IsGrounded)
+            {
+                input.x = dir * WalkSpeed;
+            }
+            else if (current_state == State.MANOEUVRING && IsGrounded)
+            {
+                input.x = dir * (WalkSpeed / 4);
+            }
         }
 
-        return input * WalkSpeed;
+        return input;
     }
     public bool isStunned()
     {
@@ -94,6 +124,15 @@ public class Walker : CustomPhysicsObject, IAttackable {
 
         health.apply(-dmg);
     }
+    public void spawn(GameObject spawner) {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 10, ground_mask);
+        if (hit.collider != null) {
+            transform.position = hit.point;
+            
+        }
+        respawn_point = transform.position;
+        PatrolBoundary = spawner.transform.parent.GetComponent<AIFlag>();
+    }
     void die() {
         if (current_state == State.STUNNED) {
             OverrideGravity = false;
@@ -101,9 +140,18 @@ public class Walker : CustomPhysicsObject, IAttackable {
         }
         transitionToState(doDeathState(current_state));
     }
+    void activateAI() {
+        transitionToState(doIdleState(current_state));
+    }
+    void deactivateAI() {
+        StopAllCoroutines();
+        current_state = State.SLEEPING;
+    }
     void updateTransitionBools()
     {
-        in_combat = (player.transform.position - transform.position).magnitude <= VisibilityRange;
+        if ((player.transform.position - transform.position).magnitude <= VisibilityRange) {
+            in_combat = Physics2D.Linecast(transform.position, player.transform.position, ground_mask).collider == null;
+        }
     }
     void checkStateTransitions() {
         if (current_state == State.IDLE)
@@ -130,16 +178,24 @@ public class Walker : CustomPhysicsObject, IAttackable {
         }
         else if (current_state == State.MANOEUVRING)
         {
-            if (is_timer_complete) {
-                transitionToState(doShootingState(current_state));
-            }
-            else if (!in_combat)
+            if (!in_combat)
             {
                 transitionToState(doIdleState(current_state));
             }
+            if (is_timer_complete)
+            {
+                transitionToState(doShootingState(current_state));
+            }
         }
-        else if (current_state == State.STUNNED) {
-            if (was_attacked) {
+        else if (current_state == State.FIRING) {
+            if (is_timer_complete) {
+                transitionToState(doManoeuvringState(current_state));
+            }
+        }
+        else if (current_state == State.STUNNED)
+        {
+            if (was_attacked)
+            {
                 was_attacked = false;
                 transitionToState(doManoeuvringState(current_state));
             }
@@ -155,11 +211,19 @@ public class Walker : CustomPhysicsObject, IAttackable {
         StartCoroutine(current_coroutine);
     }
     void checkBoundaries() {
-        Vector2 proj = rb2d.position + Vector2.right * Facing;
+        Vector2 proj = rb2d.position + Vector2.right * dir;
         RaycastHit2D hit = Physics2D.Raycast(proj, Vector2.down, 3f, ground_mask);
         if (hit.collider == null || !PatrolBoundary.isInBoundary(proj))
         {
-            dir *= -1f;
+            is_on_edge = true;
+            if (current_state == State.WALKING)
+            {
+                dir *= -1f;
+                aim = Vector2.right * dir;
+            }
+        }
+        else {
+            is_on_edge = false;
         }
     }
     IEnumerator doIdleState(State prev) {
@@ -174,13 +238,18 @@ public class Walker : CustomPhysicsObject, IAttackable {
     }
     IEnumerator doWalkingState(State prev) {
         current_state = State.WALKING;
-
+        
         is_timer_complete = false;
 
+        is_walking = true;
+
         dir = (Random.value <= 0.5f ? -1f : 1f);
+        aim = Vector2.right * dir;
 
         current_timer_interval = Random.Range(min_walk, max_walk);
         yield return new WaitForSecondsRealtime(current_timer_interval);
+
+        is_walking = false;
 
         is_timer_complete = true;
     }
@@ -189,21 +258,41 @@ public class Walker : CustomPhysicsObject, IAttackable {
 
         is_timer_complete = false;
 
-        float timer = 0f;
+        float timer = Random.Range(MinFiringPause, MaxFiringPause);
 
         while (true)
         {
-            dir = -transform.position.x * player.transform.position.y + transform.position.y * player.transform.position.x;
-            if (dir >= 0)
+            aim = (player.transform.position - transform.position);
+            float side = aim.x >= 0 ? 1.0f : -1.0f;
+
+            float angle = Vector2.SignedAngle(Vector2.right * side, aim) * side;
+            if (angle > MaxGunElevation)
             {
-                dir = 1f;
+                aim = Quaternion.Euler(0, 0, MaxGunElevation * Facing) * Vector2.right * Facing;
             }
-            else {
-                dir = -1f;
+            else if (angle < MaxGunDepression)
+            {
+                aim = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
             }
 
-            timer += Time.deltaTime;
-            if (timer >= FiringPause)
+            if (!is_on_edge) {
+                if (angle > MaxGunElevation || angle < MaxGunDepression)
+                {
+                    is_walking = true;
+                    dir = -side;
+                }
+                else
+                {
+                    dir = side;
+                    is_walking = (aim.magnitude > 10f);
+                }
+
+            } else {
+                is_walking = false;
+            }
+
+            timer -= Time.deltaTime;
+            if (timer <= 0)
             {
                 is_timer_complete = true;
             }
@@ -212,17 +301,25 @@ public class Walker : CustomPhysicsObject, IAttackable {
         }
     }
     IEnumerator doShootingState(State prev) {
+        is_timer_complete = false;
+        current_state = State.FIRING;
 
+        short bursts_fired = 0;
 
-        yield return null;
+        while (bursts_fired < NumShotsInBurst)
+        {
+            Instantiate(BulletPrefab, transform.position, Quaternion.LookRotation(Vector3.forward, aim));
+            bursts_fired++;
+
+            yield return new WaitForSeconds(RateOfFire);
+        }
+        is_timer_complete = true;
     }
     IEnumerator doStunnedState(State prev, Vector2 dir, float pow, float stun_time) {
         current_state = State.STUNNED;
 
         rb2d.position += dir;
         Velocity = dir * pow;
-
-        Debug.Log(stun_time);
 
         if (stun_time > 0f)
         {
@@ -244,23 +341,45 @@ public class Walker : CustomPhysicsObject, IAttackable {
     IEnumerator doDeathState(State prev) {
         current_state = State.DEAD;
 
-        yield return null;
+        yield return new WaitForSeconds(3.0f);
+
+        health.reset();
+
+        OverrideGravity = false;
+        OverrideVelocityX = true;
+
+        transform.position = respawn_point;
+        transitionToState(doIdleState(current_state));
     }
 
     void OnDrawGizmos() {
+        if (!DrawAIDebug) {
+            return;
+        }
+
+        Gizmos.color = Color.blue;
+        Vector2 max = Quaternion.Euler(0, 0, MaxGunElevation * Facing) * Vector2.right * Facing;
+        Vector2 min = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
+        Gizmos.DrawLine(transform.position, (Vector2)transform.position + max * 5.0f);
+        Gizmos.DrawLine(transform.position, (Vector2)transform.position + min * 5.0f);
+
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, transform.position + Vector3.right * dir);
+        Gizmos.DrawLine(transform.position, (Vector2)transform.position + aim);
 
         switch (current_state) {
-            case State.IDLE: Gizmos.color = Color.white;
-                break;
             case State.WALKING: Gizmos.color = Color.green;
                 break;
             case State.MANOEUVRING: Gizmos.color = Color.yellow;
                 break;
+            case State.FIRING: Gizmos.color = Color.red;
+                break;
             case State.STUNNED: Gizmos.color = Color.blue;
                 break;
             case State.DEAD: Gizmos.color = Color.black;
+                break;
+            case State.SLEEPING: Gizmos.color = Color.grey;
+                break;
+            case State.IDLE: Gizmos.color = Color.white;
                 break;
         }
 

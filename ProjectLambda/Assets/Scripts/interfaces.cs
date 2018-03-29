@@ -14,3 +14,6 @@ public interface IAttackable {
     bool isInvincible();
     void attack(int dmg, Vector2 dir, float pow, float stun_time = 0f);
 }
+public interface ISpawnable {
+    void spawn(GameObject spawner);
+}

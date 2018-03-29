@@ -1,10 +1,55 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 /**
  * sin wave tutorial from: https://answers.unity.com/questions/803434/how-to-make-projectile-to-shoot-in-a-sine-wave-pat.html
  * **/
-public class Queen : MonoBehaviour, IAttackable {
+
+public class Queen : MonoBehaviour, IAttackable, ISpawnable
+{
+    enum State
+    {
+        SLEEPING,
+        IDLE,
+        WALKING,
+        MANOEUVRING,
+        FIRING,
+        STUNNED,
+        DEAD
+    };
+
+    public float VisibilityRange = 10f;
+    public bool DrawAIDebug = false;
+
+    AIFlag PatrolBoundary;
+    LayerMask ground_mask;
+    Vector2 respawn_point;
+
+    public void attack(int dmg, Vector2 dir, float pow, float stun_time = 0)
+    {
+        
+    }
+    public bool isInvincible()
+    {
+        return false;
+    }
+    public bool isStunned()
+    {
+        return false;
+    }
+    public void spawn(GameObject spawner) {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 10, ground_mask);
+        if (hit.collider != null)
+        {
+            transform.position = hit.point;
+
+        }
+        respawn_point = transform.position;
+        PatrolBoundary = spawner.transform.parent.GetComponent<AIFlag>();
+    }
+}
+/*public class Queen : MonoBehaviour, IAttackable {
 
     public float VisibilityRange = 10f;
     public float Speed = 5f;
@@ -182,4 +227,4 @@ public class Queen : MonoBehaviour, IAttackable {
         attacking = true;
         Debug.Log("ready to attack");
     }
-}
+}*/

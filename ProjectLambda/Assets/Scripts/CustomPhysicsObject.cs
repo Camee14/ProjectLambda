@@ -23,6 +23,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     Vector2 input;
     Vector2 sum_of_forces;
     Vector2 velocity;
+    Vector2 external_forces;
     Vector2 surface_normal;
     Vector2 tether_point;
     ContactFilter2D contact_filter;
@@ -44,6 +45,11 @@ public class CustomPhysicsObject : MonoBehaviour {
     public Vector2 Velocity {
         get { return velocity; }
         set { velocity = value; }
+    }
+    public Vector2 ExternalForces
+    {
+        get { return external_forces; }
+        set { external_forces = value; }
     }
 
     public float Facing {
@@ -189,8 +195,8 @@ public class CustomPhysicsObject : MonoBehaviour {
         Vector2 dir = x_movement * delta_pos.x;
         move(dir, false);
 
-         dir = Vector2.up * delta_pos.y;
-         move(dir, true);
+        dir = Vector2.up * delta_pos.y;
+        move(dir, true);
 
         resolveOverlaps();
 
@@ -199,6 +205,7 @@ public class CustomPhysicsObject : MonoBehaviour {
 
     void move(Vector2 dir, bool move_y) {
         float dist = dir.magnitude;
+        Vector2 offset = Vector2.zero;
         if (dist >= MIN_MOVE_DISTANCE) {
             int count = rb2d.Cast(dir, contact_filter, hits, dist + SHELL_RADIUS);
 
@@ -222,6 +229,11 @@ public class CustomPhysicsObject : MonoBehaviour {
                 else {
                     is_sliding = true;
                 }
+                PlatformMove moving_p = hit.collider.transform.GetComponent<PlatformMove>();
+                if (moving_p != null)
+                {
+                    offset += moving_p.getVelocity();
+                }
 
                 //slows down velocity when object is hit
                 float projection = Vector2.Dot(velocity, normal);
@@ -229,20 +241,11 @@ public class CustomPhysicsObject : MonoBehaviour {
                     velocity = velocity - normal * projection;
                 }
 
-                /*projection = Vector2.Dot(Physics2D.gravity, normal);
-                if (projection < 0)
-                {
-                    if (normal.y < min_ground_normal_y)
-                    {
-                        //is_sliding = true;
-                    }
-                }*/
-
                 float mod_dist = hit.distance - SHELL_RADIUS;
                 dist = mod_dist < dist ? mod_dist : dist;
             }
         }
-        Vector2 next_pos = rb2d.position + dir.normalized * dist;
+        Vector2 next_pos = rb2d.position + (dir.normalized * dist) + offset;
         rb2d.position = next_pos;
     }
 

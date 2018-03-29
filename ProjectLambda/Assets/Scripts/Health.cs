@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Health : MonoBehaviour {
     public int MaxHealth = 100;
+    public bool Invincibility = false;
+
     int current_health;
 
     public delegate void HealthDamagedEvent(int hp, int max);
@@ -17,6 +19,10 @@ public class Health : MonoBehaviour {
     }
 
     public void apply(int ammount) {
+        if (Invincibility) {
+            return;
+        }
+
         current_health = Mathf.Clamp(current_health += ammount, 0, MaxHealth);
         if (OnCharacterDeath != null && current_health == 0)
         {
