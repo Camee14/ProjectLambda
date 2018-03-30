@@ -152,6 +152,10 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         if ((player.transform.position - transform.position).magnitude <= VisibilityRange) {
             in_combat = Physics2D.Linecast(transform.position, player.transform.position, ground_mask).collider == null;
         }
+        else
+        {
+            in_combat = false;
+        }
     }
     void checkStateTransitions() {
         if (current_state == State.IDLE)
