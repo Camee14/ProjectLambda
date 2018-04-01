@@ -44,7 +44,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
     AIFlag PatrolBoundary;
 
-    LayerMask ground_mask;
+    LayerMask walkable_mask;
+    LayerMask visibility_mask;
 
     GameObject player;
 
@@ -56,7 +57,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
     protected override void awake()
     {
-        ground_mask = LayerMask.GetMask("Grappleable");
+        visibility_mask = LayerMask.GetMask("Grappleable", "DynamicPlatform");
+        walkable_mask = LayerMask.GetMask("Grappleable");
 
         transitionToState(doIdleState(current_state));
 
@@ -125,7 +127,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         health.apply(-dmg);
     }
     public void spawn(GameObject spawner) {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 10, ground_mask);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 10, walkable_mask);
         if (hit.collider != null) {
             transform.position = hit.point;
             
@@ -150,7 +152,11 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     void updateTransitionBools()
     {
         if ((player.transform.position - transform.position).magnitude <= VisibilityRange) {
-            in_combat = Physics2D.Linecast(transform.position, player.transform.position, ground_mask).collider == null;
+            in_combat = Physics2D.Linecast(transform.position, player.transform.position, visibility_mask).collider == null;
+        }
+        else
+        {
+            in_combat = false;
         }
     }
     void checkStateTransitions() {
@@ -212,7 +218,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     }
     void checkBoundaries() {
         Vector2 proj = rb2d.position + Vector2.right * dir;
-        RaycastHit2D hit = Physics2D.Raycast(proj, Vector2.down, 3f, ground_mask);
+        RaycastHit2D hit = Physics2D.Raycast(proj, Vector2.down, 3f, walkable_mask);
         if (hit.collider == null || !PatrolBoundary.isInBoundary(proj))
         {
             is_on_edge = true;
@@ -297,7 +303,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 is_timer_complete = true;
             }
 
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
     }
     IEnumerator doShootingState(State prev) {
@@ -329,7 +335,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             {
                 Velocity = Vector2.Lerp(Velocity, Vector2.zero, Velocity.magnitude * Time.deltaTime);
                 stun_time -= Time.deltaTime;
-                yield return null;
+                yield return new WaitForFixedUpdate();
             }
         }
 

@@ -290,7 +290,7 @@ public class Player : CustomPhysicsObject
     }
     IEnumerator doDashAttack(Vector2 dir) {
         OverrideGravity = true;
-        health.Invincibility = true;
+        health.setInvincible(true);
         Velocity = dir.normalized * 80f;
 
         Collider2D[] cols = new Collider2D[16];
@@ -314,7 +314,7 @@ public class Player : CustomPhysicsObject
 
         OverrideGravity = false;
         OverrideVelocityX = true;
-        health.Invincibility = false;
+        health.setInvincible(false);
     }
     IEnumerator doGroundSlam() {
         float multiplier = 10f;

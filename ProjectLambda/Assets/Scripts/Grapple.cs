@@ -67,7 +67,7 @@ public class Grapple : MonoBehaviour {
     }
 
     void Awake () {
-        grapple_mask = LayerMask.GetMask("Grappleable", "Enemy");
+        grapple_mask = LayerMask.GetMask("Grappleable", "DynamicPlatform");
 
         line = GetComponent<LineRenderer>();
         line.enabled = false;

@@ -32,6 +32,34 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1893805796850282
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4269349248675332}
+  m_Layer: 11
+  m_Name: Children
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4269349248675332
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1893805796850282}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4754198328227420}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4754198328227420
 Transform:
   m_ObjectHideFlags: 1
@@ -39,9 +67,10 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1718609691138620}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.55, y: 12.25, z: -0.453125}
+  m_LocalPosition: {x: 17.306366, y: 17.188864, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 4269349248675332}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -91,14 +120,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 335b29810b066784886377ebd6d7b141, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  VisibilityRange: 10
-  Speed: 5
+  VisibilityRange: 30
+  Speed: 7
   Frequency: 3
-  Magnitude: 1.5
-  MaxChildren: 3
-  PatrolBoundary: {fileID: 0}
-  satelite_prefab: {fileID: 1672921721973484, guid: 0354b9d8d65b56f498af7fb184a9e38e,
+  Magnitude: 2
+  MinClearance: 5
+  MaxNumChildren: 5
+  ShooterDrone: {fileID: 1672921721973484, guid: 0354b9d8d65b56f498af7fb184a9e38e,
     type: 2}
+  BulletPrefab: {fileID: 1051425351904454, guid: 9433c686552714941af08393443f5e45,
+    type: 2}
+  DrawAIDebug: 0
 --- !u!114 &114791267231199592
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -121,8 +153,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ea447f34b09c44408b3708d418179e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHealth: 100
+  MaxHealth: 20
   Invincibility: 0
+  current_health: 100
 --- !u!212 &212723696036152934
 SpriteRenderer:
   m_ObjectHideFlags: 1
