@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 4118007625803428}
   - component: {fileID: 114396551960213404}
   m_Layer: 0
-  m_Name: AI Spawner Box
+  m_Name: AI Spawner Box_Queen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51,5 +51,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5b277c620340fc428b6242677e6958a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Spawn: {fileID: 1142228923607372, guid: e80b1b541ff1c3446b9e4ea634072600, type: 2}
+  Spawn: {fileID: 1718609691138620, guid: 0173b1b253a32d148bc4c39ca1fd9241, type: 2}
   Icon: {fileID: 2800000, guid: a968b2abc13a6b64fbdb54b3d333b36a, type: 3}

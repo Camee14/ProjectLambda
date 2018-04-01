@@ -262,6 +262,9 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     IEnumerator doManoeuvringState(State prev) {
         current_state = State.MANOEUVRING;
 
+        OverrideGravity = false;
+        OverrideVelocityX = true;
+
         is_timer_complete = false;
 
         float timer = Random.Range(MinFiringPause, MaxFiringPause);
