@@ -11,6 +11,10 @@ public class ShooterDrone : MonoBehaviour, IAttackable {
             queen.destroyChild(transform);
         }
     }
+    public void knockback(Vector2 dir, float pow, float hang_time = 0f)
+    {
+
+    }
     public bool isInvincible()
     {
         return false;

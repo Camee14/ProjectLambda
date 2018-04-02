@@ -9,6 +9,7 @@ TagManager:
   - CheckPoint
   - Terrain
   - Projectile
+  - MovingTerrain
   layers:
   - Default
   - TransparentFX
