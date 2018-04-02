@@ -36,10 +36,10 @@ public class CustomPhysicsObject : MonoBehaviour {
     bool is_grounded;
     bool is_sliding;
 
-    Vector2 db_result_force;
+    //Vector2 db_result_force;
     Vector2 db_velocity;
-    Vector2 db_tether_force;
-    Vector2 db_vel_proj;
+    //Vector2 db_tether_force;
+    //Vector2 db_vel_proj;
     List<RaycastHit2D> db_hit_list;
 
     public Vector2 Velocity {
@@ -79,8 +79,8 @@ public class CustomPhysicsObject : MonoBehaviour {
         is_tethered = true;
     }
     public void releaseTether() {
-        db_result_force = Vector2.zero;
-        db_tether_force = Vector2.zero;
+        //db_result_force = Vector2.zero;
+        //db_tether_force = Vector2.zero;
         //db_velocity = Vector2.zero;
         //db_vel_proj = Vector2.zero;
 
@@ -181,7 +181,7 @@ public class CustomPhysicsObject : MonoBehaviour {
         }
 
         db_velocity = velocity;
-        db_result_force = sum_of_forces;
+        //db_result_force = sum_of_forces;
 
         is_grounded = false;
         is_sliding = false;
@@ -198,7 +198,7 @@ public class CustomPhysicsObject : MonoBehaviour {
         dir = Vector2.up * delta_pos.y;
         move(dir, true);
 
-        resolveOverlaps();
+        resolveOverlaps(dir);
 
         fixedUpdate();
     }
@@ -229,10 +229,14 @@ public class CustomPhysicsObject : MonoBehaviour {
                 else {
                     is_sliding = true;
                 }
-                PlatformMove moving_p = hit.collider.transform.GetComponent<PlatformMove>();
-                if (moving_p != null)
+
+                if (hit.collider.tag == "MovingTerrain")
                 {
-                    offset += moving_p.getVelocity();
+                    PlatformMove moving_p = hit.collider.transform.GetComponent<PlatformMove>();
+                    if (moving_p != null)
+                    {
+                        offset += moving_p.getVelocity();
+                    }
                 }
 
                 //slows down velocity when object is hit
@@ -249,8 +253,12 @@ public class CustomPhysicsObject : MonoBehaviour {
         rb2d.position = next_pos;
     }
 
-    void resolveOverlaps() {
-        int count = 0;
+    void resolveOverlaps(Vector2 dir) {
+        if (dir.magnitude < MIN_MOVE_DISTANCE)
+        {
+            return;
+        }
+            int count = 0;
         int loops = 0;
         do
         {
@@ -289,8 +297,8 @@ public class CustomPhysicsObject : MonoBehaviour {
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(rb2d.position, rb2d.position + db_velocity);
 
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawLine(rb2d.position, rb2d.position + db_vel_proj);
+            //Gizmos.color = Color.magenta;
+            //Gizmos.DrawLine(rb2d.position, rb2d.position + db_vel_proj);
 
             
             foreach (RaycastHit2D hit in db_hit_list)

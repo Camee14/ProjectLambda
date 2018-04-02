@@ -15,12 +15,19 @@ public class Health : MonoBehaviour {
     public event HealthDamagedEvent OnHealthDamaged;
     public event DeathEvent OnCharacterDeath;
 
+    public bool IsInvincible {
+        get { return Invincibility || is_invincible; }
+    }
+
     void Awake() {
         current_health = MaxHealth;
     }
+    public bool isAlive() {
+        return current_health > 0;
+    }
 
     public void apply(int ammount) {
-        if (Invincibility || is_invincible) {
+        if (IsInvincible) {
             return;
         }
         current_health = Mathf.Clamp(current_health += ammount, 0, MaxHealth);
