@@ -36,7 +36,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
     GameObject player;
     Transform children;
-    
+
     AIFlag PatrolBoundary;
     Health health;
     ProximityDetector detector;
@@ -65,6 +65,10 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         }
         health.apply(-dmg);
     }
+    public void knockback(Vector2 dir, float pow, float hang_time = 0f)
+    {
+
+    }
     public bool isInvincible()
     {
         return is_shielded;
@@ -78,7 +82,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         if (hit.collider != null)
         {
             transform.position = new Vector2(hit.point.x, hit.point.y + MinClearance);
-            ground_pos =  hit.point;
+            ground_pos = hit.point;
         }
         respawn_point = transform.position;
         PatrolBoundary = spawner.transform.parent.GetComponent<AIFlag>();
@@ -103,6 +107,9 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         detector.onCameraExit += deactivateAI;
 
         player = GameObject.Find("Player");
+        Player p = player.GetComponent<Player>();
+        p.onPlayerDeath += playerDeath;
+        p.onPlayerRespawnChanged += playerRespawnChanged;
 
         visibility_mask = LayerMask.GetMask("Grappleable", "DynamicPlatform");
         walkable_mask = LayerMask.GetMask("Grappleable");
@@ -130,16 +137,39 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     }
     void activateAI()
     {
+        if (current_state == State.DEAD)
+        {
+            return;
+        }
         transitionToState(doIdleState(current_state));
     }
     void deactivateAI()
     {
+        if (current_state == State.DEAD)
+        {
+            return;
+        }
         StopAllCoroutines();
         current_state = State.SLEEPING;
     }
     void die()
     {
         transitionToState(doDeathState(current_state));
+    }
+    void playerDeath() {
+        health.reset();
+        transform.position = respawn_point;
+
+        StopAllCoroutines();
+        current_state = State.SLEEPING;
+    }
+    void playerRespawnChanged() {
+        if (current_state == State.DEAD) {
+            Player p = player.GetComponent<Player>();
+            p.onPlayerDeath -= playerDeath;
+            p.onPlayerRespawnChanged -= playerRespawnChanged;
+            Destroy(gameObject);
+        }
     }
     void doChildRotation(int index, float base_speed, bool do_offset) {
         float speed = base_speed;
@@ -402,7 +432,6 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
             yield return new WaitForFixedUpdate();
         }
-        Debug.Log("queen dead!");
         while (true) {
             yield return new WaitForFixedUpdate();
         }

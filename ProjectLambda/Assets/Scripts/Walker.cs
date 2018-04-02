@@ -63,6 +63,9 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         transitionToState(doIdleState(current_state));
 
         player = GameObject.Find("Player");
+        Player p = player.GetComponent<Player>();
+        p.onPlayerDeath += playerDeath;
+        p.onPlayerRespawnChanged += playerRespawnChanged;
 
         health = GetComponent<Health>();
         health.OnCharacterDeath += die;
@@ -122,9 +125,15 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         if (current_state == State.DEAD) {
             return;
         }
-        transitionToState(doStunnedState(current_state, dir, pow, stun_time));
-
         health.apply(-dmg);
+        transitionToState(doAttackStunnedState(current_state, dir, pow, stun_time));
+    }
+    public void knockback(Vector2 dir, float pow, float hang_time = 0f) {
+        if (current_state == State.DEAD)
+        {
+            return;
+        }
+        transitionToState(doKnockBackStunnedState(current_state, dir, pow, hang_time));
     }
     public void spawn(GameObject spawner) {
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 10, walkable_mask);
@@ -136,16 +145,42 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         PatrolBoundary = spawner.transform.parent.GetComponent<AIFlag>();
     }
     void die() {
-        if (current_state == State.STUNNED) {
+        /*if (current_state == State.STUNNED) {
             OverrideGravity = false;
             OverrideVelocityX = true;
         }
-        transitionToState(doDeathState(current_state));
+        transitionToState(doDeathState(current_state));*/
+    }
+    void playerDeath()
+    {
+        health.reset();
+        transform.position = respawn_point;
+
+        StopAllCoroutines();
+        current_state = State.SLEEPING;
+    }
+    void playerRespawnChanged()
+    {
+        if (current_state == State.DEAD)
+        {
+            Player p = player.GetComponent<Player>();
+            p.onPlayerDeath -= playerDeath;
+            p.onPlayerRespawnChanged -= playerRespawnChanged;
+            Destroy(gameObject);
+        }
     }
     void activateAI() {
+        if (current_state == State.DEAD)
+        {
+            return;
+        }
         transitionToState(doIdleState(current_state));
     }
     void deactivateAI() {
+        if (current_state == State.DEAD)
+        {
+            return;
+        }
         StopAllCoroutines();
         current_state = State.SLEEPING;
     }
@@ -324,41 +359,67 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         }
         is_timer_complete = true;
     }
-    IEnumerator doStunnedState(State prev, Vector2 dir, float pow, float stun_time) {
+    IEnumerator doAttackStunnedState(State prev, Vector2 dir, float pow, float stun_time) {
         current_state = State.STUNNED;
-
-        rb2d.position += dir;
-        Velocity = dir * pow;
-
-        if (stun_time > 0f)
+        dir.Normalize();
+        
+        OverrideVelocityX = false;
+        if (stun_time > 0f && health.isAlive())
         {
+            dir.y = 0;
             OverrideGravity = true;
-            OverrideVelocityX = false;
+        
             while (stun_time > 0f)
             {
-                Velocity = Vector2.Lerp(Velocity, Vector2.zero, Velocity.magnitude * Time.deltaTime);
-                stun_time -= Time.deltaTime;
+                //Velocity = Vector2.Lerp(Velocity, Vector2.zero, Velocity.magnitude * Time.deltaTime);
+                Velocity = dir * pow;
+                pow -= 1200 * Time.deltaTime;
+                if (pow < 0)
+                {
+                    pow = 0;
+                }
                 yield return new WaitForFixedUpdate();
+                stun_time -= Time.deltaTime;
             }
         }
+        else if (!health.isAlive()) {
+            Velocity = dir * 10;
+        }
 
+        if (health.isAlive())
+        {
+            OverrideVelocityX = true;
+        }
+        else {
+            current_state = State.DEAD;
+        }
         OverrideGravity = false;
-        OverrideVelocityX = true;
+        was_attacked = true;
+    }
+    IEnumerator doKnockBackStunnedState(State prev, Vector2 dir, float pow, float knockback_time) {
+        current_state = State.STUNNED;
 
+        dir.Normalize();
+        dir *= pow;
+        OverrideVelocityX = false;
+        OverrideGravity = true;
+
+        float timer = 0;
+        Velocity = dir;
+        while (timer < knockback_time)
+        {
+            Velocity = Vector2.Lerp(Velocity, Vector2.zero, (timer / knockback_time));
+            yield return new WaitForFixedUpdate();
+            timer += Time.deltaTime;
+        }
+        OverrideVelocityX = true;
+        OverrideGravity = false;
         was_attacked = true;
     }
     IEnumerator doDeathState(State prev) {
         current_state = State.DEAD;
 
         yield return new WaitForSeconds(3.0f);
-
-        health.reset();
-
-        OverrideGravity = false;
-        OverrideVelocityX = true;
-
-        transform.position = respawn_point;
-        transitionToState(doIdleState(current_state));
     }
 
     void OnDrawGizmos() {

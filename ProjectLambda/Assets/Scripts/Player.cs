@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using InControl;
 
-public class Player : CustomPhysicsObject
+public class Player : CustomPhysicsObject, IAttackable
 {
     public float MovementSpeed = 7f;
     public float JumpForce = 7f;
@@ -14,10 +14,17 @@ public class Player : CustomPhysicsObject
     public float RespawnY = -250f;
 
     Health health;
+    Energy energy;
     public Grapple grapple;
 
     public Vector3 respawn_point;
     //made that public so I could make sure the checkpoints were working
+
+    public delegate void PlayerDeathEvent();
+    public delegate void PlayerRespawnChangedEvent();
+
+    public event PlayerDeathEvent onPlayerDeath;
+    public event PlayerRespawnChangedEvent onPlayerRespawnChanged;
 
     LongButtonPressDetector detector;
 
@@ -33,7 +40,21 @@ public class Player : CustomPhysicsObject
     bool movement_enabled = true;
     bool jump_enabled = true;
     bool interupt_action = false;
+    bool basic_attack_enabled = true;
 
+    public void attack(int dmg, Vector2 dir, float pow, float stun_time) {
+        health.apply(-dmg);
+    }
+    public void knockback(Vector2 dir, float pow, float hang_time = 0f)
+    {
+
+    }
+    public bool isStunned() {
+        return false;
+    }
+    public bool isInvincible() {
+        return health.IsInvincible;
+    }
     protected override void awake()
     {
         base.awake();
@@ -41,6 +62,7 @@ public class Player : CustomPhysicsObject
         detector = new LongButtonPressDetector(InputControlType.Action3, InputControlType.Action2);
 
         health = GetComponent<Health>();
+        energy = GetComponent<Energy>();
 
         enemy_mask = LayerMask.GetMask("Enemy");
 
@@ -61,9 +83,12 @@ public class Player : CustomPhysicsObject
     private void OnTriggerEnter2D(Collider2D other)
     {
         //just sets the respawn point to the position of the last checkpoint reached
-        if (other.tag == "CheckPoint")
+        if (other.tag == "CheckPoint" && other.transform.position != respawn_point)
         {
             respawn_point = other.transform.position;
+            if (onPlayerRespawnChanged != null) {
+                onPlayerRespawnChanged();
+            }
         }
     }
 
@@ -71,18 +96,23 @@ public class Player : CustomPhysicsObject
     {
         base.update();
 
-        if (detector.longPress(InputControlType.Action3))
+        if (!basic_attack_enabled && (IsGrounded || grapple.isGrappleConnected)) {
+            basic_attack_enabled = true;
+        }
+
+        if (detector.longPress(InputControlType.Action3) && energy.hasCharge())
         {
             setBulletTime(true);
             OverrideVelocityX = false;
             if (InputManager.ActiveDevice.Action3.WasReleased)
             {
+                energy.consumeCharges(1);
                 StartCoroutine(doDashAttack(getAimDir()));
                 setBulletTime(false);
             }
 
         }
-        else if (detector.shortPress(InputControlType.Action3) && attack_timer <= 0 && basic_attack_count < 4) {
+        else if (detector.shortPress(InputControlType.Action3) && attack_timer <= 0 && basic_attack_count < 4 && basic_attack_enabled) {
             basic_attack_count++;
 
             if (hang_timer > 0 && hang_timer - (MaxHangTime * 0.75) <= 0)
@@ -93,14 +123,10 @@ public class Player : CustomPhysicsObject
             attack_timer = BasicAttackRate;
             hang_timer = BasicAttackRate + MaxHangTime;
 
-            OverrideGravity = true;
-            OverrideVelocityX = false;
-            canUseAllControls(false);
+            interupt_action = false;
 
             Vector2 dir = getAimDir();
-            rb2d.position += dir;
-            Velocity = dir;
-
+            StartCoroutine(doHangTime(dir));
             doBasicAttack(dir);
         }
 
@@ -113,14 +139,13 @@ public class Player : CustomPhysicsObject
                 hang_timer = 0f;
             }
             if (hang_timer <= 0) {
-                OverrideGravity = false;
-                OverrideVelocityX = true;
-                canUseAllControls(true);
+                interupt_action = true;
+                basic_attack_enabled = false;
                 basic_attack_count = 0;
                 attack_charges = 0;
             }
         }
-        if (InputManager.ActiveDevice.Action4.WasPressed && !IsGrounded) {
+        if (InputManager.ActiveDevice.Action4.WasPressed && !IsGrounded && energy.consumeCharges(1)) {
             interupt_action = false;
             StartCoroutine(doGroundSlam());
         }
@@ -253,6 +278,10 @@ public class Player : CustomPhysicsObject
         OverrideVelocityX = true;
         canUseAllControls(true);
 
+        if (onPlayerDeath != null) {
+            onPlayerDeath();
+        }
+
         transform.position = respawn_point;
 
         health.reset();
@@ -266,7 +295,7 @@ public class Player : CustomPhysicsObject
     }
     void doBasicAttack(Vector2 dir)
     {
-        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (transform.right * 2) * Facing, new Vector2(3f, 1), 0f, enemy_mask);
+        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (transform.right * 2) * Facing, new Vector2(3f, 3), 0f, enemy_mask);
         if (cols.Length != 0)
         {
             foreach (Collider2D col in cols)
@@ -279,14 +308,37 @@ public class Player : CustomPhysicsObject
                     }
                     if (attack_charges == 3)
                     {
-                        ab.attack(0, (dir + Vector2.up).normalized, 12f);
+                        ab.attack(40, (dir + Vector2.up).normalized, 60, BasicAttackRate + MaxHangTime);
                     }
                     else {
-                        ab.attack(20, dir, 4f, 0.5f);
+                        ab.attack(20, dir, 60f, BasicAttackRate + MaxHangTime);
                     }
                 }
             }
         }
+    }
+    IEnumerator doHangTime(Vector2 dir) {
+
+        OverrideGravity = true;
+        OverrideVelocityX = false;
+        canUseAllControls(false);
+
+        dir.y = 0f;
+
+        float speed = 60f;
+        while (!interupt_action)
+        {
+            Velocity = dir.normalized * speed;
+            speed -= 1200 * Time.deltaTime;
+            if (speed < 0) {
+                speed = 0;
+            }
+            yield return new WaitForFixedUpdate();
+        }
+
+        OverrideGravity = false;
+        OverrideVelocityX = true;
+        canUseAllControls(true);
     }
     IEnumerator doDashAttack(Vector2 dir) {
         OverrideGravity = true;
@@ -303,7 +355,7 @@ public class Player : CustomPhysicsObject
                 {
                     if (!ab.isStunned())
                     {
-                        ab.attack(0, Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
+                        ab.knockback(Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
                     }
                 }
             }
@@ -346,7 +398,7 @@ public class Player : CustomPhysicsObject
                 if (ab != null)
                 {
                     float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
-                    ab.attack(0, Vector2.up, 16f * mag, 1f);
+                    ab.knockback(Vector2.up, 18f * mag, 1f);
                 }
             }
         }
