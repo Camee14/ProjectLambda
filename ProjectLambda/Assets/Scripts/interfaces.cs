@@ -13,7 +13,6 @@ public interface IAttackable {
     bool isStunned();
     bool isInvincible();
     void attack(int dmg, Vector2 dir, float pow, float stun_time = 0f);
-    void knockback(Vector2 dir, float pow, float hang_time = 0f);
 }
 public interface ISpawnable {
     void spawn(GameObject spawner);
