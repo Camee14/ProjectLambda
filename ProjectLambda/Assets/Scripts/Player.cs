@@ -282,6 +282,11 @@ public class Player : CustomPhysicsObject, IAttackable
             onPlayerDeath();
         }
 
+        GameObject[] projectiles = GameObject.FindGameObjectsWithTag("Projectile");
+        for (int i = 0; i < projectiles.Length; i++) {
+            Destroy(projectiles[i]);
+        }
+
         transform.position = respawn_point;
 
         health.reset();
@@ -380,11 +385,7 @@ public class Player : CustomPhysicsObject, IAttackable
             int count = rb2d.OverlapCollider(dash_contact_filter, cols);
             for (int i = 0; i < count; i++)
             {
-                TempAttackedBehaviour tab = cols[i].GetComponent<TempAttackedBehaviour>();
-                if (tab != null)
-                {
-                    //pick up enemies
-                }
+
             }
             yield return null;
         }
