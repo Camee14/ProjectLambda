@@ -27,7 +27,7 @@ public class HealthPack : MonoBehaviour {
 
     }
     void OnTriggerEnter2D(Collider2D col) {
-        if (col.tag == "Player") {
+        if (col.tag == "Player" && !p.GetComponent<Health>().isMaxHealth()) {
             for (int i = 0; i < NumOrbsToSpawn; i++) {
                 Instantiate(HealthOrb, transform.position, Quaternion.identity);
             }

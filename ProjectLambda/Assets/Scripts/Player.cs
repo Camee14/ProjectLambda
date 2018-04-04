@@ -139,8 +139,12 @@ public class Player : CustomPhysicsObject, IAttackable
                 hang_timer = 0f;
             }
             if (hang_timer <= 0) {
+                if (basic_attack_count == 4)
+                {
+                    basic_attack_enabled = false;
+                }
                 interupt_action = true;
-                basic_attack_enabled = false;
+
                 basic_attack_count = 0;
                 attack_charges = 0;
             }

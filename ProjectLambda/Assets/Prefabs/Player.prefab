@@ -118,7 +118,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -24.5, y: -2.9, z: 0}
+  m_LocalPosition: {x: 237, y: 14, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -327,6 +327,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MinWireLength: 1
   MaxWireLength: 15
+  CanGrappleIndicator: {r: 0, g: 1, b: 0, a: 0.5882353}
+  CannotGrappleIndicator: {r: 1, g: 0, b: 0, a: 0.5882353}
+  SoftLockOnAngle: 30
   SoftLockOn: 1
   AimIndicatior: {fileID: 1717649321546534}
   DrawDebug: 0
@@ -508,12 +511,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 89e73325abf904045b6e6733d1269883, type: 3}
-  m_Color: {r: 0.99264705, g: 0.22626512, b: 0.22626512, a: 0.591}
+  m_Sprite: {fileID: 21300000, guid: f596b17ff76e50145842ddf4049f279b, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.84, y: 2.84}
+  m_Size: {x: 2.56, y: 2.56}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

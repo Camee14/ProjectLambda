@@ -37,10 +37,10 @@ public class CustomPhysicsObject : MonoBehaviour {
     bool is_sliding;
 
     //Vector2 db_result_force;
-    Vector2 db_velocity;
+    //Vector2 db_velocity;
     //Vector2 db_tether_force;
     //Vector2 db_vel_proj;
-    List<RaycastHit2D> db_hit_list;
+    //List<RaycastHit2D> db_hit_list;
 
     public Vector2 Velocity {
         get { return velocity; }
@@ -79,11 +79,6 @@ public class CustomPhysicsObject : MonoBehaviour {
         is_tethered = true;
     }
     public void releaseTether() {
-        //db_result_force = Vector2.zero;
-        //db_tether_force = Vector2.zero;
-        //db_velocity = Vector2.zero;
-        //db_vel_proj = Vector2.zero;
-
         is_tethered = false;
     }
 
@@ -105,7 +100,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     void Awake() {
         hits = new RaycastHit2D[16];
         hit_list = new List<RaycastHit2D>(16);
-        db_hit_list = new List<RaycastHit2D>(16);
+        //db_hit_list = new List<RaycastHit2D>(16);
 
         rb2d = GetComponent<Rigidbody2D>();
 
@@ -132,6 +127,7 @@ public class CustomPhysicsObject : MonoBehaviour {
             return;
         }
         sum_of_forces = (override_gravity ? Vector2.zero : Physics2D.gravity);
+
         if (is_tethered) {
             Vector2 tether = tether_point - rb2d.position;
 
@@ -155,6 +151,11 @@ public class CustomPhysicsObject : MonoBehaviour {
             }
         }
         velocity += sum_of_forces * Mass * Time.deltaTime;
+
+        /*if (is_sliding && velocity.y < 0)
+        {
+            velocity = Vector2.ClampMagnitude(velocity, 4);
+        }*/
 
         if (override_velx)
         {
@@ -180,7 +181,7 @@ public class CustomPhysicsObject : MonoBehaviour {
             surface_normal = Vector2.up;
         }
 
-        db_velocity = velocity;
+        //db_velocity = velocity;
         //db_result_force = sum_of_forces;
 
         is_grounded = false;
@@ -190,7 +191,7 @@ public class CustomPhysicsObject : MonoBehaviour {
 
         Vector2 delta_pos = velocity * Time.deltaTime;
 
-        db_hit_list.Clear();
+        //db_hit_list.Clear();
 
         Vector2 dir = x_movement * delta_pos.x;
         move(dir, false);
@@ -212,7 +213,7 @@ public class CustomPhysicsObject : MonoBehaviour {
             hit_list.Clear();
             for (int i = 0; i < count; i++) {
                 hit_list.Add(hits[i]);
-                db_hit_list.Add(hits[i]);
+                //db_hit_list.Add(hits[i]);
             }
 
             foreach (RaycastHit2D hit in hit_list) {
@@ -285,32 +286,32 @@ public class CustomPhysicsObject : MonoBehaviour {
     void OnDrawGizmos() {
         if (rb2d != null && DrawDebug)
         {
-            Gizmos.color = Color.red;
+           // Gizmos.color = Color.red;
            // Gizmos.DrawLine(rb2d.position, rb2d.position + Physics2D.gravity);
 
-            Gizmos.color = Color.blue;
+            //Gizmos.color = Color.blue;
            // Gizmos.DrawLine(rb2d.position, rb2d.position + db_tether_force);
 
-            Gizmos.color = Color.green;
+           // Gizmos.color = Color.green;
            // Gizmos.DrawLine(rb2d.position, rb2d.position + db_result_force);
 
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(rb2d.position, rb2d.position + db_velocity);
+           // Gizmos.color = Color.yellow;
+           // Gizmos.DrawLine(rb2d.position, rb2d.position + db_velocity);
 
             //Gizmos.color = Color.magenta;
             //Gizmos.DrawLine(rb2d.position, rb2d.position + db_vel_proj);
 
             
-            foreach (RaycastHit2D hit in db_hit_list)
+            /*foreach (RaycastHit2D hit in db_hit_list)
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawWireCube(hit.collider.transform.position, hit.collider.bounds.extents * 2f);
 
                 Gizmos.color = Color.green;
                 Gizmos.DrawLine(hit.point, hit.point + hit.normal);
-            }
+            }*/
 
-            Gizmos.color = IsGrounded ? Color.green : Color.red;
+            //Gizmos.color = IsGrounded ? Color.green : Color.red;
            // Gizmos.DrawCube(transform.position, new Vector3(0.4f, 0.4f, 1f));
         }
 

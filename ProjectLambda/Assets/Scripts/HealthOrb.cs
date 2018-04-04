@@ -42,7 +42,7 @@ public class HealthOrb : MonoBehaviour {
         transform.position = (Vector2)transform.position + velocity * Time.deltaTime;
         timer += Time.deltaTime;
     }
-    void OnTriggerEnter2D(Collider2D col) {
+    void OnTriggerStay2D(Collider2D col) {
         if (col.tag == "Player" && timer > TrackingDelay) {
             Health h = col.transform.GetComponent<Health>();
             if (h != null) {

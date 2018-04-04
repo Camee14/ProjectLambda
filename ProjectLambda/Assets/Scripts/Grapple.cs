@@ -7,6 +7,9 @@ public class Grapple : MonoBehaviour {
 
     public float MinWireLength = 0.5f;
     public float MaxWireLength = 20f;
+    public Color CanGrappleIndicator = Color.green;
+    public Color CannotGrappleIndicator = Color.red;
+    public float SoftLockOnAngle = 30f;
     public bool SoftLockOn = true;
    
     public GameObject AimIndicatior;
@@ -16,6 +19,7 @@ public class Grapple : MonoBehaviour {
     Player parent;
 
     LineRenderer line;
+    SpriteRenderer indicator;
     LayerMask grapple_mask;
 
     Transform grapple_target;
@@ -71,6 +75,8 @@ public class Grapple : MonoBehaviour {
 
         line = GetComponent<LineRenderer>();
         line.enabled = false;
+
+        indicator = transform.GetChild(0).GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -84,24 +90,27 @@ public class Grapple : MonoBehaviour {
     {
          if (!grapple_connected)
          {
-             Vector2 dir = getAimDir();
-             RaycastHit2D hit = getTarget(dir);
+            Vector2 dir = getAimDir();
+            Transform target;
+            Vector2 point;
 
-             if (hit.collider != null)
+             if (getTarget(dir, out point, out target))
              {
-                 grapple_target = hit.transform;
-                 grapple_target_point = grapple_target.InverseTransformPoint(hit.point);
+                 grapple_target = target;
+                 grapple_target_point = grapple_target.InverseTransformPoint(point);
 
-                 current_wire_length = (hit.point - (Vector2)transform.position).magnitude;
+                 current_wire_length = (point - (Vector2)transform.position).magnitude;
                  if (current_wire_length > 6f)
                  {
                      current_wire_length *= 0.5f;
                  }
-                 AimIndicatior.transform.position = hit.point;
-             }
+                 AimIndicatior.transform.position = point;
+                indicator.color = CanGrappleIndicator;
+            }
              else
              {
                 AimIndicatior.transform.position = transform.position + ((Vector3)dir * MaxWireLength);
+                indicator.color = CannotGrappleIndicator;
                 grapple_target = null;
              }
          }
@@ -109,35 +118,80 @@ public class Grapple : MonoBehaviour {
     Vector2 getAimDir() {
         return (man_aim_dir != Vector2.zero ? man_aim_dir : Vector2.up + (Vector2.right * parent.Facing)).normalized;
     }
-    RaycastHit2D getTarget(Vector2 dir) {
+    bool getTarget(Vector2 dir, out Vector2 point, out Transform target) {
+        point = Vector2.zero;
+        target = null;
         RaycastHit2D hit;
         if (SoftLockOn)
         {
-            float angle = 0f;
-            do
+            hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
+            if (hit.collider == null)
             {
-                float rads = angle * Mathf.Deg2Rad;
-                Vector2 positive_dir;
-                positive_dir.x = dir.x * Mathf.Cos(rads) - dir.y * Mathf.Sin(rads);
-                positive_dir.y = dir.x * Mathf.Sin(rads) + dir.y * Mathf.Cos(rads);
+                float offset = 0;
 
-                hit = Physics2D.Raycast(transform.position, positive_dir, MaxWireLength, grapple_mask);
-                if (hit.collider == null)
+                dir = dir.normalized;
+
+                Vector2 n_dir = RotateVector(dir, -(SoftLockOnAngle / 2)) * MaxWireLength;
+                Vector2 p_dir = RotateVector(dir, SoftLockOnAngle / 2) * MaxWireLength;
+
+                Vector2 p1 = (Vector2)transform.position + n_dir;
+                Vector2 p2 = (Vector2)transform.position + p_dir;
+
+                float max_rad = (p2 - p1).magnitude;
+                float min_rad = 0.1f;
+
+                while (offset < MaxWireLength)
                 {
-                    Vector2 negative_dir;
-                    negative_dir.x = dir.x * Mathf.Cos(-rads) - dir.y * Mathf.Sin(-rads);
-                    negative_dir.y = dir.x * Mathf.Sin(-rads) + dir.y * Mathf.Cos(-rads);
+                    float rad = Mathf.Lerp(min_rad, max_rad, offset / MaxWireLength);
+                    Vector2 center = (Vector2)transform.position + dir.normalized * offset;
+                    Collider2D[] cols = Physics2D.OverlapCircleAll(center, rad, grapple_mask);
 
-                    hit = Physics2D.Raycast(transform.position, negative_dir, MaxWireLength, grapple_mask);
+                    bool found = false;
+                    foreach (Collider2D col in cols) {
+                        Vector2 p = col.bounds.ClosestPoint(center);
+                        if (!found)
+                        {
+                            point = p;
+                            target = col.transform;
+                            found = true;
+                        }
+                        else
+                        {
+                            if ((p - center).sqrMagnitude <= (point - center).sqrMagnitude)
+                            {
+                                point = p;
+                            }
+                        }
+                    }
+                    if (found) {
+                        return true;
+                    }
+
+                    offset += rad;
                 }
-                angle++;
-            } while (hit.collider == null && angle <= 30f);
+            }
         }
         else
         {
             hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
         }
-        return hit;
+
+        if (hit.collider != null)
+        {
+            point = hit.point;
+            target = hit.transform;
+            return true;
+        }
+        return false;
+    }
+    Vector2 RotateVector(Vector2 v, float a) {
+        float x = v.x;
+        float y = v.y;
+        a = a * Mathf.Deg2Rad;
+        v.x = (x * Mathf.Cos(a)) - (y * Mathf.Sin(a));
+        v.y = (x * Mathf.Sin(a)) + (y * Mathf.Cos(a));
+
+        return v;
     }
     void OnDrawGizmos()
     {
@@ -150,5 +204,31 @@ public class Grapple : MonoBehaviour {
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, grapple_target.TransformPoint(grapple_target_point));
         }
+
+        /*Vector2 dir = getAimDir();
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
+        if (hit.collider == null)
+        {
+            float offset = 0;
+            float angle = 15f;
+
+            dir = dir.normalized;
+
+            Vector2 n_dir = RotateVector(dir, -(angle / 2)) * MaxWireLength;
+            Vector2 p_dir = RotateVector(dir, angle / 2) * MaxWireLength;
+
+            Vector2 p1 = (Vector2)transform.position + n_dir;
+            Vector2 p2 = (Vector2)transform.position + p_dir;
+
+            float max_rad = (p2 - p1).magnitude;
+            float min_rad = 0.1f;
+
+            while (offset < MaxWireLength)
+            {
+                float rad = Mathf.Lerp(min_rad, max_rad, offset / MaxWireLength);
+                Gizmos.DrawWireSphere((Vector2)transform.position + dir * offset, rad);
+                offset += rad;
+            }
+        }*/
     }
 }

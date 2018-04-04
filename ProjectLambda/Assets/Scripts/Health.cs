@@ -25,6 +25,9 @@ public class Health : MonoBehaviour {
     public bool isAlive() {
         return current_health > 0;
     }
+    public bool isMaxHealth() {
+        return current_health == MaxHealth;
+    }
 
     public void apply(int ammount) {
         if (IsInvincible) {
