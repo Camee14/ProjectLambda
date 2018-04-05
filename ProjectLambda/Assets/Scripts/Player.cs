@@ -33,6 +33,7 @@ public class Player : CustomPhysicsObject, IAttackable
 
     float attack_timer = 0f;
     float hang_timer = 0f;
+    float stun_timer = 0f;
     short basic_attack_count = 0;
     short attack_charges = 0;
 
@@ -43,14 +44,28 @@ public class Player : CustomPhysicsObject, IAttackable
     bool basic_attack_enabled = true;
 
     public void attack(int dmg, Vector2 dir, float pow, float stun_time) {
-        health.apply(-dmg);
+        if (grapple.isGrappleConnected) {
+            grapple.detach();
+        }
+        
+        if (health.apply(-dmg))
+        {
+            return;
+        }
+
+        health.setInvincible(true);
+        basic_attack_enabled = false;
+        OverrideVelocityX = false;
+
+        Velocity = dir.normalized * pow;
+        stun_timer = stun_time;
     }
     public void knockback(Vector2 dir, float pow, float hang_time = 0f)
     {
 
     }
     public bool isStunned() {
-        return false;
+        return stun_timer > 0;
     }
     public bool isInvincible() {
         return health.IsInvincible;
@@ -95,6 +110,14 @@ public class Player : CustomPhysicsObject, IAttackable
     protected override void update()
     {
         base.update();
+
+        if (stun_timer > 0) {
+            stun_timer -= Time.deltaTime;
+            if (stun_timer <= 0) {
+                health.setInvincible(false);
+                OverrideVelocityX = true;
+            }
+        }
 
         if (!basic_attack_enabled && (IsGrounded || grapple.isGrappleConnected)) {
             basic_attack_enabled = true;
@@ -186,6 +209,9 @@ public class Player : CustomPhysicsObject, IAttackable
         if (transform.position.y < RespawnY) {
             health.instakill();
         }
+
+        transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * Facing, transform.localScale.y, transform.localScale.z);
+
         detector.Update();
     }
     protected override void fixedUpdate()
@@ -285,6 +311,9 @@ public class Player : CustomPhysicsObject, IAttackable
         if (onPlayerDeath != null) {
             onPlayerDeath();
         }
+
+        stun_timer = 0f;
+        Velocity = Vector2.zero;
 
         GameObject[] projectiles = GameObject.FindGameObjectsWithTag("Projectile");
         for (int i = 0; i < projectiles.Length; i++) {
@@ -403,7 +432,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 if (ab != null)
                 {
                     float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
-                    ab.knockback(Vector2.up, 18f * mag, 1f);
+                    ab.knockback(Vector2.up, 20f * mag, 1f);
                 }
             }
         }

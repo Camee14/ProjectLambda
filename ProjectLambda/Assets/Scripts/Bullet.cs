@@ -16,7 +16,7 @@ public class Bullet : MonoBehaviour {
             if (ab.isInvincible()) {
                 return;
             }
-            ab.attack(damage, transform.up, 10);
+            ab.attack(damage, transform.up, 10, 0.4f);
         }
         Destroy(gameObject);
     }

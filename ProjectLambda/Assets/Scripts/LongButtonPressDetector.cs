@@ -4,7 +4,7 @@ using UnityEngine;
 using InControl;
 
 public class LongButtonPressDetector {
-    public float threshold = 0.3f;
+    public float threshold = 0.5f;
 
     List<InputControlType> listen_to;
     Dictionary<InputControlType, float> timers;

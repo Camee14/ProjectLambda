@@ -29,18 +29,20 @@ public class Health : MonoBehaviour {
         return current_health == MaxHealth;
     }
 
-    public void apply(int ammount) {
+    public bool apply(int ammount) {
         if (IsInvincible) {
-            return;
+            return false;
         }
         current_health = Mathf.Clamp(current_health += ammount, 0, MaxHealth);
         if (OnCharacterDeath != null && current_health == 0)
         {
             OnCharacterDeath();
+            return true;
         }
         else if (OnHealthDamaged != null) {
             OnHealthDamaged(current_health, MaxHealth);
         }
+        return false;
 
     }
     public void reset() {

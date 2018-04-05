@@ -59,6 +59,10 @@ public class Grapple : MonoBehaviour {
         man_aim_dir = Vector2.zero;
         if (GrappleTarget != null) {
             grapple_connected = true;
+
+            line.SetPosition(0, transform.position);
+            line.SetPosition(1, GrapplePoint);
+
             line.enabled = true;
             return true;
         }
@@ -83,7 +87,8 @@ public class Grapple : MonoBehaviour {
     {
         if (grapple_connected)
         {
-            line.SetPosition(1, GrapplePoint - (Vector2)transform.position);
+            line.SetPosition(0, transform.position);
+            line.SetPosition(1, GrapplePoint);
         }
     }
     void FixedUpdate()
@@ -127,8 +132,6 @@ public class Grapple : MonoBehaviour {
             hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
             if (hit.collider == null)
             {
-                float offset = 0;
-
                 dir = dir.normalized;
 
                 Vector2 n_dir = RotateVector(dir, -(SoftLockOnAngle / 2)) * MaxWireLength;
@@ -137,9 +140,9 @@ public class Grapple : MonoBehaviour {
                 Vector2 p1 = (Vector2)transform.position + n_dir;
                 Vector2 p2 = (Vector2)transform.position + p_dir;
 
-                float max_rad = (p2 - p1).magnitude;
+                float max_rad = (p2 - p1).magnitude / 2;
                 float min_rad = 0.1f;
-
+                float offset = 1;
                 while (offset < MaxWireLength)
                 {
                     float rad = Mathf.Lerp(min_rad, max_rad, offset / MaxWireLength);
@@ -148,16 +151,19 @@ public class Grapple : MonoBehaviour {
 
                     bool found = false;
                     foreach (Collider2D col in cols) {
-                        Vector2 p = col.bounds.ClosestPoint(center);
+                        Vector2 p = col.bounds.ClosestPoint(center); // this doesnt work for anything other than AABB's
                         if (!found)
                         {
                             point = p;
                             target = col.transform;
-                            found = true;
+                            if ((p - (Vector2)transform.position).magnitude < MaxWireLength)
+                            {
+                                found = true;
+                            }
                         }
                         else
                         {
-                            if ((p - center).sqrMagnitude <= (point - center).sqrMagnitude)
+                            if ((p - center).sqrMagnitude <= (point - center).sqrMagnitude && (p - (Vector2)transform.position).magnitude < MaxWireLength)
                             {
                                 point = p;
                             }
@@ -205,30 +211,28 @@ public class Grapple : MonoBehaviour {
             Gizmos.DrawLine(transform.position, grapple_target.TransformPoint(grapple_target_point));
         }
 
-        /*Vector2 dir = getAimDir();
+        Vector2 dir = getAimDir();
         RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, MaxWireLength, grapple_mask);
         if (hit.collider == null)
         {
-            float offset = 0;
-            float angle = 15f;
-
             dir = dir.normalized;
 
-            Vector2 n_dir = RotateVector(dir, -(angle / 2)) * MaxWireLength;
-            Vector2 p_dir = RotateVector(dir, angle / 2) * MaxWireLength;
+            Vector2 n_dir = RotateVector(dir, -(SoftLockOnAngle / 2)) * MaxWireLength;
+            Vector2 p_dir = RotateVector(dir, SoftLockOnAngle / 2) * MaxWireLength;
 
             Vector2 p1 = (Vector2)transform.position + n_dir;
             Vector2 p2 = (Vector2)transform.position + p_dir;
 
-            float max_rad = (p2 - p1).magnitude;
+            float max_rad = (p2 - p1).magnitude / 2;
             float min_rad = 0.1f;
-
+            float offset = 1f;
             while (offset < MaxWireLength)
             {
                 float rad = Mathf.Lerp(min_rad, max_rad, offset / MaxWireLength);
                 Gizmos.DrawWireSphere((Vector2)transform.position + dir * offset, rad);
                 offset += rad;
             }
-        }*/
+        }
+        Gizmos.DrawLine(transform.position, (Vector2)transform.position + dir.normalized * MaxWireLength);
     }
 }

@@ -118,7 +118,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 237, y: 14, z: 0}
+  m_LocalPosition: {x: 27.02, y: 26.15, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -159,7 +159,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 15
+  orthographic size: 14
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -329,7 +329,7 @@ MonoBehaviour:
   MaxWireLength: 15
   CanGrappleIndicator: {r: 0, g: 1, b: 0, a: 0.5882353}
   CannotGrappleIndicator: {r: 1, g: 0, b: 0, a: 0.5882353}
-  SoftLockOnAngle: 30
+  SoftLockOnAngle: 40
   SoftLockOn: 1
   AimIndicatior: {fileID: 1717649321546534}
   DrawDebug: 0
@@ -367,6 +367,7 @@ MonoBehaviour:
   MaxHangTime: 0.3
   RespawnY: -250
   grapple: {fileID: 114745566186501726}
+  sword: {fileID: 0}
   respawn_point: {x: -76.4, y: 10.6, z: 0}
 --- !u!114 &114968467724419896
 MonoBehaviour:
@@ -379,7 +380,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ea447f34b09c44408b3708d418179e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxHealth: 100
+  MaxHealth: 40
   Invincibility: 0
   current_health: 0
 --- !u!120 &120801903166874640
@@ -468,7 +469,7 @@ LineRenderer:
     alignment: 0
     textureMode: 0
     generateLightingData: 0
-  m_UseWorldSpace: 0
+  m_UseWorldSpace: 1
   m_Loop: 0
 --- !u!124 &124560969811360422
 Behaviour:
