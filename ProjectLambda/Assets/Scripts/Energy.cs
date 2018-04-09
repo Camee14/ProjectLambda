@@ -5,6 +5,8 @@ using UnityEngine;
 public class Energy : MonoBehaviour {
     public int EnergyCharges = 3;
     public double BaseRechargeRate = 5;
+    public bool InfiniteCharges = false;
+
     List<double> charges;
     int full_charges = 0;
 
@@ -16,9 +18,12 @@ public class Energy : MonoBehaviour {
         full_charges = 3;
 	}
     public bool hasCharge() {
-        return full_charges > 0;
+        return full_charges > 0 || InfiniteCharges;
     }
     public bool consumeCharges(int num) {
+        if (InfiniteCharges) {
+            return true;
+        }
         if (num > full_charges) {
             return false;
         }
@@ -48,8 +53,8 @@ public class Energy : MonoBehaviour {
         }
         Gizmos.color = Color.blue;
         for(int i = 0; i < charges.Count; i++) {
-            Gizmos.DrawWireCube(transform.position + Vector3.up + Vector3.right * i, new Vector3(0.5f, 0.25f, 1f));
-            Gizmos.DrawCube(transform.position + Vector3.up + Vector3.right * i, new Vector3((float)(0.5 * (charges[i] / 100)), 0.25f , 1f));
+            Gizmos.DrawWireCube(transform.position + Vector3.up * 2 + Vector3.left + Vector3.right * i, new Vector3(0.5f, 0.25f, 1f));
+            Gizmos.DrawCube(transform.position + Vector3.up * 2 + Vector3.left + Vector3.right * i, new Vector3((float)(0.5 * (charges[i] / 100)), 0.25f , 1f));
         }
     }
 }

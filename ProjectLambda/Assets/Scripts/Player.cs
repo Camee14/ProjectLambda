@@ -273,6 +273,10 @@ public class Player : CustomPhysicsObject, IAttackable
     {
         base.onDrawGizmos();
 
+        if (!DrawDebug) {
+            return;
+        }
+
         float percentage = (attack_timer / BasicAttackRate);
         if (percentage < 0) {
             percentage = 0;
@@ -346,7 +350,7 @@ public class Player : CustomPhysicsObject, IAttackable
                     }
                     if (attack_charges == 3)
                     {
-                        ab.attack(40, (dir + Vector2.up).normalized, 60, BasicAttackRate + MaxHangTime);
+                        ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + MaxHangTime);
                     }
                     else {
                         ab.attack(20, dir, 60f, BasicAttackRate + MaxHangTime);
