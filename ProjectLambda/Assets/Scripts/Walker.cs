@@ -13,7 +13,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         DEAD
     };
 
-    public GameObject BulletPrefab;
     public float VisibilityRange = 10f;
     public float WalkSpeed = 12f;
     public float MaxGunElevation = 45f;
@@ -22,6 +21,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     public float MaxFiringPause = 5f;
     public float RateOfFire = 0.25f;
     public short NumShotsInBurst = 3;
+    public GameObject BulletPrefab;
+    public Transform GunBarrel;
     public bool DrawAIDebug = false;
 
     IEnumerator current_coroutine;
@@ -48,6 +49,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     LayerMask visibility_mask;
 
     GameObject player;
+    ParticleSystem HitParticles;
 
     Health health;
     ProximityDetector detector;
@@ -73,6 +75,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         detector = GetComponent<ProximityDetector>();
         detector.onCameraEnter += activateAI;
         detector.onCameraExit += deactivateAI;
+
+        HitParticles = transform.Find("SparkParticles").GetComponent<ParticleSystem>();
 
         OverrideAutoFacing = true;
 
@@ -352,7 +356,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         while (bursts_fired < NumShotsInBurst)
         {
-            Instantiate(BulletPrefab, transform.position, Quaternion.LookRotation(Vector3.forward, aim));
+            Instantiate(BulletPrefab, GunBarrel.position, Quaternion.LookRotation(Vector3.forward, aim));
             bursts_fired++;
 
             yield return new WaitForSeconds(RateOfFire);
@@ -362,7 +366,10 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     IEnumerator doAttackStunnedState(State prev, Vector2 dir, float pow, float stun_time) {
         current_state = State.STUNNED;
         dir.Normalize();
-        
+
+        HitParticles.Play();
+        HitParticles.transform.rotation = Quaternion.LookRotation(-dir, new Vector2(dir.y, -dir.x));
+
         OverrideVelocityX = false;
         if (stun_time > 0f && health.isAlive())
         {

@@ -9,6 +9,7 @@ TagManager:
   - CheckPoint
   - Terrain
   - Projectile
+  - MovingTerrain
   layers:
   - Default
   - TransparentFX
@@ -46,6 +47,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: lighting
+  - name: midground
     uniqueID: 187955407
+    locked: 0
+  - name: foreground
+    uniqueID: 1785296157
+    locked: 0
+  - name: lighting
+    uniqueID: 2931165247
     locked: 0
