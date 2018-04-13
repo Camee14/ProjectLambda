@@ -13,22 +13,30 @@ public class ButtonManager : MonoBehaviour {
     public event MenuDisplayEvent onMenuDisplayChanged;
 
     Canvas canvas;
+    short wait_for_reset;
+
+    bool p_state;
 
     void Awake() {
         canvas = GetComponent<Canvas>();
 
         canvas.enabled = false;
+        p_state = false;
     }
 
     void Update()
     {
+        if (onMenuDisplayChanged != null && (p_state != canvas.enabled))
+        {
+            onMenuDisplayChanged(canvas.enabled);
+            p_state = canvas.enabled;
+        }
+
+
         if (InputManager.ActiveDevice.MenuWasPressed)
         {
             canvas.enabled = !canvas.enabled;
             Time.timeScale = canvas.enabled ? 0 : 1;
-            if (onMenuDisplayChanged != null) {
-                onMenuDisplayChanged(canvas.enabled);
-            }
         }
     }
 
@@ -45,10 +53,6 @@ public class ButtonManager : MonoBehaviour {
     {
         Time.timeScale = 1;
         canvas.enabled = false;
-        if (onMenuDisplayChanged != null)
-        {
-            onMenuDisplayChanged(canvas.enabled);
-        }
+        wait_for_reset = 3;
     }
-
 }

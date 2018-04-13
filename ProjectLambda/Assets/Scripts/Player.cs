@@ -40,6 +40,7 @@ public class Player : CustomPhysicsObject, IAttackable
     bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
+    bool jump_down_on_unpause = false;
     bool interupt_action = false;
     bool basic_attack_enabled = true;
     bool is_paused = false;
@@ -112,11 +113,12 @@ public class Player : CustomPhysicsObject, IAttackable
 
     protected override void update()
     {
-        base.update();
-
-        if (is_paused) {
+        if (is_paused)
+        {
             return;
         }
+
+        base.update();
 
         if (stun_timer > 0) {
             stun_timer -= Time.deltaTime;
@@ -223,12 +225,12 @@ public class Player : CustomPhysicsObject, IAttackable
     }
     protected override void fixedUpdate()
     {
-        base.fixedUpdate();
-
         if (is_paused)
         {
             return;
         }
+
+        base.fixedUpdate();
 
         if (grapple.isGrappleConnected)
         {
@@ -243,6 +245,10 @@ public class Player : CustomPhysicsObject, IAttackable
     protected override Vector2 setInputAcceleration()
     {
         Vector2 move = Vector2.zero;
+        if (is_paused)
+        {
+            return move;
+        }
 
         if (movement_enabled)
         {
@@ -252,6 +258,7 @@ public class Player : CustomPhysicsObject, IAttackable
         {
             if (InputManager.ActiveDevice.Action1.IsPressed)
             {
+                Debug.Log("doing jump");
                 if (IsGrounded)
                 {
                     Velocity = new Vector2(Velocity.x, JumpForce);
@@ -277,6 +284,12 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
                 }
+            }
+        }
+        else {
+            if (jump_down_on_unpause && InputManager.ActiveDevice.Action1.WasReleased) {
+                jump_enabled = true;
+                jump_down_on_unpause = false;
             }
         }
         return move * MovementSpeed;
@@ -341,8 +354,13 @@ public class Player : CustomPhysicsObject, IAttackable
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
     }
     void onMenuDisplayChanged(bool enabled) {
-        Debug.Log("menu " + enabled);
         is_paused = enabled;
+        if (!is_paused) {
+            if (InputManager.ActiveDevice.Action1.IsPressed) {
+                jump_down_on_unpause = true;
+                jump_enabled = false;
+            }
+        }
     }
     Vector2 getAimDir() {
         return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).normalized : InputManager.ActiveDevice.LeftStick.Vector;
