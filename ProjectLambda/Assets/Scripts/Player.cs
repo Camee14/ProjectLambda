@@ -42,6 +42,7 @@ public class Player : CustomPhysicsObject, IAttackable
     bool jump_enabled = true;
     bool interupt_action = false;
     bool basic_attack_enabled = true;
+    bool is_paused = false;
 
     public void attack(int dmg, Vector2 dir, float pow, float stun_time) {
         if (grapple.isGrappleConnected) {
@@ -88,6 +89,8 @@ public class Player : CustomPhysicsObject, IAttackable
         health.OnHealthDamaged += healthDamaged;
         health.OnCharacterDeath += die;
 
+        GameObject.FindGameObjectWithTag("Menu").GetComponent<ButtonManager>().onMenuDisplayChanged += onMenuDisplayChanged;
+
         InputManager.OnActiveDeviceChanged += onActiveDeviceChanged;
 
         respawn_point = transform.position;
@@ -110,6 +113,10 @@ public class Player : CustomPhysicsObject, IAttackable
     protected override void update()
     {
         base.update();
+
+        if (is_paused) {
+            return;
+        }
 
         if (stun_timer > 0) {
             stun_timer -= Time.deltaTime;
@@ -217,6 +224,11 @@ public class Player : CustomPhysicsObject, IAttackable
     protected override void fixedUpdate()
     {
         base.fixedUpdate();
+
+        if (is_paused)
+        {
+            return;
+        }
 
         if (grapple.isGrappleConnected)
         {
@@ -327,6 +339,10 @@ public class Player : CustomPhysicsObject, IAttackable
     }
     void onActiveDeviceChanged(InputDevice active) {
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
+    }
+    void onMenuDisplayChanged(bool enabled) {
+        Debug.Log("menu " + enabled);
+        is_paused = enabled;
     }
     Vector2 getAimDir() {
         return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).normalized : InputManager.ActiveDevice.LeftStick.Vector;
