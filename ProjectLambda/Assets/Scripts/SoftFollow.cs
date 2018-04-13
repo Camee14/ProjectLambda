@@ -10,7 +10,7 @@ public class SoftFollow : MonoBehaviour {
     Vector3 p_pos;
     Vector3 target_pos;
 
-    void Start() {
+    void Awake() {
         p_pos = Target.position;
         p_pos.z = height;
         transform.position = p_pos;

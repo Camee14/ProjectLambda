@@ -85,7 +85,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     }
     protected override void update()
     {
-
+        transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * -Facing, transform.localScale.y, transform.localScale.z);
     }
     protected override void fixedUpdate()
     {

@@ -447,20 +447,5 @@ public class Player : CustomPhysicsObject, IAttackable
         Mass = Mass / multiplier;
         canUseAllControls(true);
     }
-    /*
-        WIP: function slows down game speed to the value of param floor.
-        better alternative may be to slow down only player and affected entities.
-    */
-    IEnumerator doHitPause(float floor, float rate)
-    {
-        while (Time.timeScale > floor)
-        {
-            Time.timeScale = Mathf.Clamp(Time.timeScale - rate * Time.unscaledDeltaTime, floor, 1f);
-            Time.fixedDeltaTime = 0.02F * Time.timeScale;
-            yield return null;
-        }
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02F * Time.timeScale;
-    }
 }
 

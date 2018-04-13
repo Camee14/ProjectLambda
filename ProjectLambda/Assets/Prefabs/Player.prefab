@@ -100,7 +100,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 72.3, y: 33.6, z: 0}
+  m_LocalPosition: {x: -24.6, y: -2, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -285,7 +285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Mass: 4.5
   min_ground_normal_y: 0.65
-  MaxVelocity: 20
+  MaxVelocity: 35
   DrawDebug: 0
   MovementSpeed: 16
   JumpForce: 26
@@ -339,9 +339,9 @@ LineRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: 187955407
+  m_SortingLayer: 1
+  m_SortingOrder: 1
   m_Positions:
   - {x: 399.1833, y: -93.73118, z: 0}
   - {x: 398.66052, y: -90.301895, z: 0}
