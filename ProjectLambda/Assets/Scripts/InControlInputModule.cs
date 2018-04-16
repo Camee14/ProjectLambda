@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using InControl;
-
+/**
+ * Tutorial from: https://answers.unity.com/questions/1005024/how-do-i-use-custom-input-module-and-ignore-the-de.html
+ * **/
 public class InControlInputModule : PointerInputModule
 {
     public override void ActivateModule()
