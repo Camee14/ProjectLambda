@@ -12,6 +12,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     public float Mass = 1f;
     public float min_ground_normal_y = 0.65f;
     public float MaxVelocity = 10f;
+    public float TetherGravityModifier = 0.45f;
     bool override_auto_facing = false;
     bool override_velx = true;
     bool override_gravity = false;
@@ -141,7 +142,7 @@ public class CustomPhysicsObject : MonoBehaviour {
                 rb2d.position = tether_point - tether.normalized * Mathf.Lerp(tether.magnitude, max_tether_length, 5f * Time.deltaTime); //restrain movement to radius
 
                 Vector2 g_proj = (Vector2.Dot(Physics2D.gravity, tangent) / Vector2.Dot(tangent, tangent)) * tangent; //re-direct gravity along tangent
-                g_proj = g_proj.normalized * tangent_g * 0.45f;
+                g_proj = g_proj.normalized * tangent_g * TetherGravityModifier;
 
                 Vector2 vel_proj = (Vector2.Dot(velocity, tangent) / Vector2.Dot(tangent, tangent)) * tangent; //re-direct velocity along tangent
 
