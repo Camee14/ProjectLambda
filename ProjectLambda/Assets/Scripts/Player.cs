@@ -10,7 +10,7 @@ public class Player : CustomPhysicsObject, IAttackable
     public float JumpForce = 7f;
     public float BasicAttackRate = 3f;
     public float MaxHangTime = 1f;
-
+    public float MaxGrappleVelocity = 35;
     public float RespawnY = -250f;
 
     Health health;
@@ -204,6 +204,10 @@ public class Player : CustomPhysicsObject, IAttackable
                 dir = -1f;
             }
             Facing = dir;
+        }
+
+        if (grapple.isGrappleConnected) {
+            Velocity = Vector2.ClampMagnitude(Velocity, MaxGrappleVelocity);
         }
 
         if (transform.position.y < RespawnY) {
@@ -446,21 +450,6 @@ public class Player : CustomPhysicsObject, IAttackable
 
         Mass = Mass / multiplier;
         canUseAllControls(true);
-    }
-    /*
-        WIP: function slows down game speed to the value of param floor.
-        better alternative may be to slow down only player and affected entities.
-    */
-    IEnumerator doHitPause(float floor, float rate)
-    {
-        while (Time.timeScale > floor)
-        {
-            Time.timeScale = Mathf.Clamp(Time.timeScale - rate * Time.unscaledDeltaTime, floor, 1f);
-            Time.fixedDeltaTime = 0.02F * Time.timeScale;
-            yield return null;
-        }
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02F * Time.timeScale;
     }
 }
 
