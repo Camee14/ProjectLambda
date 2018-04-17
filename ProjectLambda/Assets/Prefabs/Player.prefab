@@ -271,7 +271,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnergyCharges: 3
   BaseRechargeRate: 5
-  InfiniteCharges: 1
+  InfiniteCharges: 0
 --- !u!114 &114861918270975176
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -292,6 +292,7 @@ MonoBehaviour:
   JumpForce: 26
   BasicAttackRate: 0.3
   MaxHangTime: 0.1
+  MaxGrappleVelocity: 35
   RespawnY: -250
   grapple: {fileID: 114745566186501726}
   respawn_point: {x: 72.3, y: 33.6, z: 0}
