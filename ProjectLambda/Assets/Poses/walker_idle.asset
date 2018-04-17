@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae0543fe805424df99fe08ce744cbe49, type: 3}
+  m_Name: walker_idle
+  m_EditorClassIdentifier: 
+  m_PoseEntries:
+  - path: Bones/hip
+    localPosition: {x: 0.4073751, y: 0.17757416, z: 0}
+    localRotation: {x: 0, y: 0, z: 0.70710677, w: 0.7071069}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/torso
+    localPosition: {x: 0.23999932, y: 0.000000014901161, z: 0}
+    localRotation: {x: 0, y: 0, z: 0.76322883, w: 0.6461283}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/right_upper_leg_static
+    localPosition: {x: 0.16084433, y: 0.119762436, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.99189115, w: 0.1270907}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/right_upper_leg_static/right_upper_leg
+    localPosition: {x: 0.23999913, y: 0.00000085681677, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.045346737, w: 0.99897134}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/right_upper_leg_static/right_upper_leg/right_lower_leg
+    localPosition: {x: 0.34000114, y: -0.0000007246854, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.477393, w: 0.8786899}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/right_upper_leg_static/right_upper_leg/right_lower_leg/right_foot
+    localPosition: {x: 0.7400017, y: 0.0000007748604, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.36096236, w: 0.9325804}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/left_upper_leg_static
+    localPosition: {x: 0.27764565, y: -0.12989043, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.99427795, w: 0.10682445}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/left_upper_leg_static/left_upper_leg
+    localPosition: {x: 0.29999936, y: 0.00000037252903, z: 0}
+    localRotation: {x: 0, y: 0, z: 0.35223106, w: 0.9359131}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/left_upper_leg_static/left_upper_leg/left_lower_leg
+    localPosition: {x: 0.9000014, y: -0.0000007748604, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.7838039, w: 0.62100846}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/left_upper_leg_static/left_upper_leg/left_lower_leg/left_foot
+    localPosition: {x: 0.7900004, y: 0.0000013709068, z: 0}
+    localRotation: {x: 0, y: 0, z: 0.35399774, w: -0.93524635}
+    localScale: {x: 1, y: 1, z: 1}

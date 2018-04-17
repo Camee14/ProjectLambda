@@ -50,6 +50,9 @@ TagManager:
   - name: midground
     uniqueID: 187955407
     locked: 0
+  - name: Walker
+    uniqueID: 3592509187
+    locked: 0
   - name: foreground
     uniqueID: 1785296157
     locked: 0

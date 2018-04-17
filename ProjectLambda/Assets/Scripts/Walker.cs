@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Anima2D;
 
 public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     enum State{
@@ -23,6 +24,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     public short NumShotsInBurst = 3;
     public GameObject BulletPrefab;
     public Transform GunBarrel;
+    public Transform AimIK;
     public bool DrawAIDebug = false;
 
     IEnumerator current_coroutine;
@@ -53,16 +55,18 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
     Health health;
     ProximityDetector detector;
+    Animator anim;
 
     Vector2 aim;
     Vector2 respawn_point;
+    Vector2 default_gun_pos;
 
     protected override void awake()
     {
+        base.awake();
+
         visibility_mask = LayerMask.GetMask("Grappleable", "DynamicPlatform");
         walkable_mask = LayerMask.GetMask("Grappleable");
-
-        transitionToState(doIdleState(current_state));
 
         player = GameObject.Find("Player");
         Player p = player.GetComponent<Player>();
@@ -78,17 +82,26 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         HitParticles = transform.Find("SparkParticles").GetComponent<ParticleSystem>();
 
+        anim = transform.GetChild(2).GetComponent<Animator>();
+
         OverrideAutoFacing = true;
 
         aim = Vector2.right * Facing;
 
+        default_gun_pos = AimIK.position;
+
+        transitionToState(doIdleState(current_state));
     }
     protected override void update()
     {
+        base.update();
+
         transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * -Facing, transform.localScale.y, transform.localScale.z);
     }
     protected override void fixedUpdate()
     {
+        base.fixedUpdate();
+
         if (!detector.IsVisible) {
             return;
         }
@@ -104,14 +117,20 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         if (is_walking)
         {
+            anim.SetBool("is_walking", true);
             if (current_state == State.WALKING && IsGrounded)
             {
                 input.x = dir * WalkSpeed;
+                anim.speed = 1f;
             }
             else if (current_state == State.MANOEUVRING && IsGrounded)
             {
                 input.x = dir * (WalkSpeed / 4);
+                anim.speed = 0.25f;
             }
+        }
+        else {
+            anim.SetBool("is_walking", false);
         }
 
         return input;
@@ -288,6 +307,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         is_walking = true;
 
+        //anim.SetBool("is_walking", true);
+
         dir = (Random.value <= 0.5f ? -1f : 1f);
         aim = Vector2.right * dir;
 
@@ -311,6 +332,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         while (true)
         {
             aim = (player.transform.position - transform.position);
+           
             float side = aim.x >= 0 ? 1.0f : -1.0f;
 
             float angle = Vector2.SignedAngle(Vector2.right * side, aim) * side;
@@ -322,6 +344,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             {
                 aim = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
             }
+            Debug.DrawRay(transform.position, aim);
+            AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
 
             if (!is_on_edge) {
                 if (angle > MaxGunElevation || angle < MaxGunDepression)
@@ -441,7 +465,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         Gizmos.DrawLine(transform.position, (Vector2)transform.position + min * 5.0f);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, (Vector2)transform.position + aim);
+       // Gizmos.DrawLine(transform.position, (Vector2)transform.position + aim);
 
         switch (current_state) {
             case State.WALKING: Gizmos.color = Color.green;

@@ -307,7 +307,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxHealth: 100
-  Invincibility: 1
+  Invincibility: 0
   current_health: 100
 --- !u!120 &120801903166874640
 LineRenderer:
@@ -429,7 +429,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1785296157
-  m_SortingLayer: 2
+  m_SortingLayer: 3
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: f596b17ff76e50145842ddf4049f279b, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 0.5882353}

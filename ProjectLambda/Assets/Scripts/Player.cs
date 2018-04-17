@@ -10,7 +10,7 @@ public class Player : CustomPhysicsObject, IAttackable
     public float JumpForce = 7f;
     public float BasicAttackRate = 3f;
     public float MaxHangTime = 1f;
-
+    public float MaxGrappleVelocity = 35;
     public float RespawnY = -250f;
 
     Health health;
@@ -204,6 +204,10 @@ public class Player : CustomPhysicsObject, IAttackable
                 dir = -1f;
             }
             Facing = dir;
+        }
+
+        if (grapple.isGrappleConnected) {
+            Velocity = Vector2.ClampMagnitude(Velocity, MaxGrappleVelocity);
         }
 
         if (transform.position.y < RespawnY) {

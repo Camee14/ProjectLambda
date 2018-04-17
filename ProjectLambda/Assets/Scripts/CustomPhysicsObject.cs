@@ -152,10 +152,10 @@ public class CustomPhysicsObject : MonoBehaviour {
         }
         velocity += sum_of_forces * Mass * Time.deltaTime;
 
-        if (velocity.magnitude > MaxVelocity)
+        /*if (velocity.magnitude > MaxVelocity)
         {
             velocity = velocity.normalized * MaxVelocity;
-        }
+        }*/
         /*if (is_sliding && velocity.y < 0)
         {
             velocity = Vector2.ClampMagnitude(velocity, 4);
