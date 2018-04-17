@@ -168,11 +168,11 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         PatrolBoundary = spawner.transform.parent.GetComponent<AIFlag>();
     }
     void die() {
-        /*if (current_state == State.STUNNED) {
+        if (current_state == State.STUNNED) {
             OverrideGravity = false;
             OverrideVelocityX = true;
         }
-        transitionToState(doDeathState(current_state));*/
+        transitionToState(doDeathState(current_state));
     }
     void playerDeath()
     {
@@ -344,8 +344,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             {
                 aim = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
             }
-            Debug.DrawRay(transform.position, aim);
-            AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
+            //Debug.DrawRay(transform.position, aim);
+            //AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
 
             if (!is_on_edge) {
                 if (angle > MaxGunElevation || angle < MaxGunDepression)
@@ -449,7 +449,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     }
     IEnumerator doDeathState(State prev) {
         current_state = State.DEAD;
-
+        anim.speed = 1f;
+        anim.SetTrigger("die");
         yield return new WaitForSeconds(3.0f);
     }
 

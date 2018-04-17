@@ -182,19 +182,23 @@ public class Player : CustomPhysicsObject, IAttackable
 
         if (InputManager.ActiveDevice.Action2.WasPressed)
         {
-            if (grapple.isGrappleConnected)
-            {
-                grapple.detach();
-            }
-            else
-            {
+            //if (grapple.isGrappleConnected)
+            //{
+            //    grapple.detach();
+            //}
+           // else
+           // {
                 grapple.fire();
-            }
+            //}
+        }
+        if (InputManager.ActiveDevice.Action2.WasReleased) {
+            grapple.detach();
+            Velocity = Velocity * 1.15f;
         }
 
         if (OverrideAutoFacing)
         {
-            float dir = transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).x;
+            float dir = Camera.main.ScreenToWorldPoint(Input.mousePosition).x - transform.position.x;
             if (dir >= 0)
             {
                 dir = 1f;
@@ -337,11 +341,11 @@ public class Player : CustomPhysicsObject, IAttackable
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
     }
     Vector2 getAimDir() {
-        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).normalized : InputManager.ActiveDevice.LeftStick.Vector;
+        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)(Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized : InputManager.ActiveDevice.LeftStick.Vector;
     }
     void doBasicAttack(Vector2 dir)
     {
-        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (transform.right * 2) * Facing, new Vector2(3f, 3), 0f, enemy_mask);
+        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (Vector3.right * 2) * Facing, new Vector2(3f, 3), 0f, enemy_mask);
         if (cols.Length != 0)
         {
             foreach (Collider2D col in cols)
