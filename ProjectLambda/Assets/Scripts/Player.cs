@@ -16,6 +16,7 @@ public class Player : CustomPhysicsObject, IAttackable
     Health health;
     Energy energy;
     public Grapple grapple;
+    public GameObject DashIndicatorPrefab;
 
     public Vector3 respawn_point;
     //made that public so I could make sure the checkpoints were working
@@ -31,13 +32,15 @@ public class Player : CustomPhysicsObject, IAttackable
     ContactFilter2D dash_contact_filter;
     LayerMask enemy_mask;
 
+    SpriteRenderer DashIndicator;
+
     float attack_timer = 0f;
     float hang_timer = 0f;
     float stun_timer = 0f;
     short basic_attack_count = 0;
     short attack_charges = 0;
 
-    bool did_grapple_jump = false;
+    //bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
     bool interupt_action = false;
@@ -93,6 +96,9 @@ public class Player : CustomPhysicsObject, IAttackable
         respawn_point = transform.position;
 
         grapple.setParent(this);
+
+        GameObject dash = Instantiate(DashIndicatorPrefab);
+        DashIndicator = dash.GetComponent<SpriteRenderer>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -127,8 +133,22 @@ public class Player : CustomPhysicsObject, IAttackable
         {
             setBulletTime(true);
             OverrideVelocityX = false;
+
+            
+            Vector2 aim = getAimDir();
+            if (aim.sqrMagnitude != 0)
+            {
+                DashIndicator.enabled = true;
+                DashIndicator.transform.rotation = Quaternion.LookRotation(Vector3.forward, aim);
+                DashIndicator.transform.position = (Vector2)transform.position + aim * 12f;
+            }
+            else {
+                DashIndicator.enabled = false;
+            }
+
             if (InputManager.ActiveDevice.Action3.WasReleased)
             {
+                DashIndicator.enabled = false;
                 energy.consumeCharges(1);
                 StartCoroutine(doDashAttack(getAimDir()));
                 setBulletTime(false);
@@ -182,14 +202,7 @@ public class Player : CustomPhysicsObject, IAttackable
 
         if (InputManager.ActiveDevice.Action2.WasPressed)
         {
-            //if (grapple.isGrappleConnected)
-            //{
-            //    grapple.detach();
-            //}
-           // else
-           // {
-                grapple.fire();
-            //}
+            grapple.fire();
         }
         if (InputManager.ActiveDevice.Action2.WasReleased) {
             grapple.detach();
@@ -252,7 +265,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     Velocity = new Vector2(Velocity.x, JumpForce);
                 }
-                else if (grapple.isGrappleConnected)
+                /*else if (grapple.isGrappleConnected)
                 {
                     grapple.detach();
                     releaseTether();
@@ -261,15 +274,16 @@ public class Player : CustomPhysicsObject, IAttackable
                         Velocity = new Vector2(Velocity.x, JumpForce);
                     }
                     did_grapple_jump = true;
-                }
+                }*/
             }
             else if (InputManager.ActiveDevice.Action1.WasReleased)
             {
-                if (did_grapple_jump)
+                /*if (did_grapple_jump)
                 {
                     did_grapple_jump = false;
                 }
-                else if (Velocity.y > 0)
+                else*/
+                if (Velocity.y > 0)
                 {
                     Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
                 }
@@ -341,7 +355,7 @@ public class Player : CustomPhysicsObject, IAttackable
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
     }
     Vector2 getAimDir() {
-        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)(Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized : InputManager.ActiveDevice.LeftStick.Vector;
+        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)(Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized : InputManager.ActiveDevice.LeftStick.Vector.normalized;
     }
     void doBasicAttack(Vector2 dir)
     {

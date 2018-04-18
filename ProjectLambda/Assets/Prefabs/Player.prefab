@@ -100,7 +100,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -22.92, y: -2.53, z: 0}
+  m_LocalPosition: {x: 55.6, y: 34.2, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -295,6 +295,8 @@ MonoBehaviour:
   MaxGrappleVelocity: 35
   RespawnY: -250
   grapple: {fileID: 114745566186501726}
+  DashIndicatorPrefab: {fileID: 1997918430940752, guid: be34e7d6a6b78244c869d32aa648eb10,
+    type: 2}
   respawn_point: {x: 72.3, y: 33.6, z: 0}
 --- !u!114 &114968467724419896
 MonoBehaviour:
