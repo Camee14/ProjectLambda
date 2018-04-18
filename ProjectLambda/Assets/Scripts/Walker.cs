@@ -346,7 +346,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             }
             //Debug.DrawRay(transform.position, aim);
             //AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
-
+            
             if (!is_on_edge) {
                 if (angle > MaxGunElevation || angle < MaxGunDepression)
                 {
@@ -394,6 +394,9 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         HitParticles.Play();
         HitParticles.transform.rotation = Quaternion.LookRotation(-dir, new Vector2(dir.y, -dir.x));
 
+        anim.speed = 1f;
+        anim.SetBool("is_stunned", true);
+
         OverrideVelocityX = false;
         if (stun_time > 0f && health.isAlive())
         {
@@ -424,6 +427,9 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         else {
             current_state = State.DEAD;
         }
+
+        anim.SetBool("is_stunned", false);
+
         OverrideGravity = false;
         was_attacked = true;
     }
@@ -435,6 +441,10 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         OverrideVelocityX = false;
         OverrideGravity = true;
 
+        Debug.DrawLine(transform.position, transform.position + Vector3.up * 3f);
+        anim.speed = 1f;
+        anim.SetBool("is_knockedback", true);
+
         float timer = 0;
         Velocity = dir;
         while (timer < knockback_time)
@@ -443,6 +453,9 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             yield return new WaitForFixedUpdate();
             timer += Time.deltaTime;
         }
+
+        anim.SetBool("is_knockedback", false);
+
         OverrideVelocityX = true;
         OverrideGravity = false;
         was_attacked = true;

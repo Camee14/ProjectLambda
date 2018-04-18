@@ -10,6 +10,7 @@ public class Player : CustomPhysicsObject, IAttackable
     public float JumpForce = 7f;
     public float BasicAttackRate = 3f;
     public float MaxHangTime = 1f;
+    public float MaxDashHoldTime = 3f;
     public float MaxGrappleVelocity = 35;
     public float RespawnY = -250f;
 
@@ -37,6 +38,7 @@ public class Player : CustomPhysicsObject, IAttackable
     float attack_timer = 0f;
     float hang_timer = 0f;
     float stun_timer = 0f;
+    float dash_timer = 0f;
     short basic_attack_count = 0;
     short attack_charges = 0;
 
@@ -131,29 +133,47 @@ public class Player : CustomPhysicsObject, IAttackable
 
         if (detector.longPress(InputControlType.Action3) && energy.hasCharge())
         {
-            setBulletTime(true);
-            OverrideVelocityX = false;
-
-            
-            Vector2 aim = getAimDir();
-            if (aim.sqrMagnitude != 0)
+            if (dash_timer == 0f)
             {
-                DashIndicator.enabled = true;
-                DashIndicator.transform.rotation = Quaternion.LookRotation(Vector3.forward, aim);
-                DashIndicator.transform.position = (Vector2)transform.position + aim * 12f;
+                setBulletTime(true);
+                OverrideVelocityX = false;
             }
-            else {
+
+            if (dash_timer < MaxDashHoldTime)
+            {
+                Vector2 aim = getAimDir();
+                if (aim.sqrMagnitude != 0)
+                {
+                    DashIndicator.enabled = true;
+                    DashIndicator.transform.rotation = Quaternion.LookRotation(Vector3.forward, aim);
+                    DashIndicator.transform.position = (Vector2)transform.position + aim * 12f;
+                }
+                else
+                {
+                    DashIndicator.enabled = false;
+                }
+            }else {
                 DashIndicator.enabled = false;
+                setBulletTime(false);
+                OverrideVelocityX = true;
             }
+
+            dash_timer += Time.unscaledDeltaTime;
 
             if (InputManager.ActiveDevice.Action3.WasReleased)
             {
-                DashIndicator.enabled = false;
-                energy.consumeCharges(1);
-                StartCoroutine(doDashAttack(getAimDir()));
-                setBulletTime(false);
-            }
+                if (dash_timer < MaxDashHoldTime)
+                {
+                    DashIndicator.enabled = false;
 
+                    energy.consumeCharges(1);
+                    StartCoroutine(doDashAttack(getAimDir()));
+
+                    setBulletTime(false);
+                }
+
+                dash_timer = 0f;
+            }
         }
         else if (detector.shortPress(InputControlType.Action3) && attack_timer <= 0 && basic_attack_count < 4 && basic_attack_enabled) {
             basic_attack_count++;

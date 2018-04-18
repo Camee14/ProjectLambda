@@ -53,6 +53,9 @@ TagManager:
   - name: Walker
     uniqueID: 3592509187
     locked: 0
+  - name: Player
+    uniqueID: 2269686171
+    locked: 0
   - name: foreground
     uniqueID: 1785296157
     locked: 0
