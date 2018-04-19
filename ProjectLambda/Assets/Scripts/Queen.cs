@@ -24,6 +24,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     public float Magnitude = 1.5f;
     public float MinClearance = 1f;
     public int MaxNumChildren = 3;
+    public Animator Anim;
     public GameObject ShooterDrone;
     public GameObject BulletPrefab;
     public bool DrawAIDebug = false;
@@ -36,6 +37,8 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
     GameObject player;
     Transform children;
+
+    Shield shield;
 
     AIFlag PatrolBoundary;
     Health health;
@@ -55,14 +58,14 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     float local_time = 0;
     bool do_spin = true;
     bool reset_spawn_timer = false;
-    bool is_shielded = false;
 
     public void attack(int dmg, Vector2 dir, float pow, float stun_time = 0)
     {
-        if (current_state == State.DEAD || is_shielded)
+        if (current_state == State.DEAD || shield.isActive)
         {
             return;
         }
+        Anim.SetTrigger("stun");
         health.apply(-dmg);
     }
     public void knockback(Vector2 dir, float pow, float hang_time = 0f)
@@ -71,7 +74,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     }
     public bool isInvincible()
     {
-        return is_shielded;
+        return shield.isActive;
     }
     public bool isStunned()
     {
@@ -93,7 +96,9 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         rotations.RemoveAt(index);
         Destroy(t.gameObject);
 
-        is_shielded = (active_children.Count != 0);
+        if (active_children.Count == 0) {
+            shield.setActive(false);
+        }
         reset_spawn_timer = true;
     }
     void Awake() {
@@ -114,6 +119,8 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         visibility_mask = LayerMask.GetMask("Grappleable", "DynamicPlatform");
         walkable_mask = LayerMask.GetMask("Grappleable");
 
+        shield = transform.GetChild(1).GetComponent<Shield>();
+
         children = transform.GetChild(0);
         active_children = new List<Transform>();
         rotations = new List<float>();
@@ -131,7 +138,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         {
             for (int i = 0; i < active_children.Count; i++)
             {
-                doChildRotation(i, 90, true);
+                doChildRotation(i, 45, true);
             }
         }
     }
@@ -155,10 +162,13 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     void die()
     {
         transitionToState(doDeathState(current_state));
+        Anim.SetTrigger("die");
     }
     void playerDeath() {
         health.reset();
         transform.position = respawn_point;
+
+        Anim.SetTrigger("respawn");
 
         detector.reset();
 
@@ -198,7 +208,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         setChildPosition(active_children[index], rotations[index], do_offset);
     }
     void setChildPosition(Transform c, float a, bool do_offset) {
-        float radius = 1.5f;
+        float radius = 2f;
         if (do_offset)
         {
             local_time += Time.deltaTime;
@@ -338,7 +348,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
             setChildPosition(active_children[active_children.Count - 1], a, false);
         }
-        is_shielded = true;
+        shield.setActive(true);
         do_spin = true;
         health.setInvincible(false);
 
@@ -441,12 +451,6 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         }
         while (true) {
             yield return new WaitForFixedUpdate();
-        }
-    }
-    void OnDrawGizmos() {
-        if (is_shielded) {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(transform.position, .7f);
         }
     }
 }

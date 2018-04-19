@@ -636,7 +636,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1142228923607372}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 88.22964, y: 34.60134, z: -1.2923777}
+  m_LocalPosition: {x: 73.77, y: 49.46, z: -1.2923777}
   m_LocalScale: {x: 1.6, y: 1.6, z: 1}
   m_Children:
   - {fileID: 4756767831219796}
@@ -924,7 +924,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Length: 0.9000009
+  m_Length: 0.90000355
   m_Child: {fileID: 0}
   m_ChildTransform: {fileID: 4474877536502352}
   m_AttachedIK: {fileID: 114676611770442278}
@@ -963,7 +963,7 @@ MonoBehaviour:
       defaultLocalRotation: {x: 0, y: 0, z: -0.48879373, w: 0.87239945}
     m_Weight: 1
     m_RestoreDefaultPose: 1
-    targetPosition: {x: 88.01083, y: 33.236546, z: -1.2923777}
+    targetPosition: {x: 73.55119, y: 48.095203, z: -1.2923777}
     flip: 1
 --- !u!114 &114167032220159860
 MonoBehaviour:
@@ -977,7 +977,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Length: 0.340001
+  m_Length: 0.34000203
   m_Child: {fileID: 0}
   m_ChildTransform: {fileID: 4319066692217830}
   m_AttachedIK: {fileID: 114134656241536032}
@@ -1001,10 +1001,11 @@ MonoBehaviour:
   WalkSpeed: 12
   MaxGunElevation: 45
   MaxGunDepression: -20
-  MinFiringPause: 3
-  MaxFiringPause: 5
+  MinFiringPause: 1
+  MaxFiringPause: 3
   RateOfFire: 0.25
   NumShotsInBurst: 3
+  Anim: {fileID: 95143159274175190}
   BulletPrefab: {fileID: 1051425351904454, guid: 9433c686552714941af08393443f5e45,
     type: 2}
   GunBarrel: {fileID: 4991852785918484}
@@ -1062,7 +1063,7 @@ MonoBehaviour:
       defaultLocalRotation: {x: 0, y: 0, z: -0.000004872447, w: 1}
     m_Weight: 1
     m_RestoreDefaultPose: 1
-    targetPosition: {x: 84.05404, y: 34.609344, z: -1.2923777}
+    targetPosition: {x: 69.5944, y: 49.468002, z: -1.2923777}
     iterations: 10
     damping: 0
 --- !u!114 &114299015902549610
@@ -1112,7 +1113,7 @@ MonoBehaviour:
       defaultLocalRotation: {x: 0, y: 0, z: -0.35665232, w: 0.93423724}
     m_Weight: 1
     m_RestoreDefaultPose: 1
-    targetPosition: {x: 87.001236, y: 33.236546, z: -1.2923777}
+    targetPosition: {x: 72.541595, y: 48.095203, z: -1.2923777}
     iterations: 10
     damping: 0.8
 --- !u!114 &114396217985469688
@@ -1226,7 +1227,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Length: 0.79000306
+  m_Length: 0.79000247
   m_Child: {fileID: 0}
   m_ChildTransform: {fileID: 4263234547748178}
   m_AttachedIK: {fileID: 114676611770442278}
@@ -1265,7 +1266,7 @@ MonoBehaviour:
       defaultLocalRotation: {x: 0, y: 0, z: -0.7849494, w: 0.61955994}
     m_Weight: 1
     m_RestoreDefaultPose: 1
-    targetPosition: {x: 89.39484, y: 32.986946, z: -1.2923777}
+    targetPosition: {x: 74.935196, y: 47.845604, z: -1.2923777}
     flip: 1
 --- !u!114 &114757347491292878
 MonoBehaviour:
@@ -1299,7 +1300,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Length: 0.74000233
+  m_Length: 0.7400007
   m_Child: {fileID: 0}
   m_ChildTransform: {fileID: 4535462037956796}
   m_AttachedIK: {fileID: 114134656241536032}
@@ -1366,7 +1367,7 @@ MonoBehaviour:
       defaultLocalRotation: {x: 0, y: 0, z: 0.35399774, w: -0.93524635}
     m_Weight: 1
     m_RestoreDefaultPose: 1
-    targetPosition: {x: 88.36444, y: 33.007744, z: -1.2923777}
+    targetPosition: {x: 73.9048, y: 47.8664, z: -1.2923777}
     iterations: 10
     damping: 0.8
 --- !u!114 &114884390187066434
