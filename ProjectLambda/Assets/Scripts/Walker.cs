@@ -54,7 +54,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     ParticleSystem HitParticles;
 
     Health health;
-    ProximityDetector detector;
+    ProximitySwitch detector;
     Animator anim;
 
     Vector2 aim;
@@ -76,9 +76,9 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         health = GetComponent<Health>();
         health.OnCharacterDeath += die;
 
-        detector = GetComponent<ProximityDetector>();
-        detector.onCameraEnter += activateAI;
-        detector.onCameraExit += deactivateAI;
+        detector = GetComponent<ProximitySwitch>();
+        detector.onSwitchOn += activateAI;
+        detector.onSwitchOff += deactivateAI;
 
         HitParticles = transform.Find("SparkParticles").GetComponent<ParticleSystem>();
 
@@ -102,7 +102,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     {
         base.fixedUpdate();
 
-        if (!detector.IsVisible) {
+        if (!detector.IsSwitchedOn) {
             return;
         }
         Facing = aim.x >= 0 ? 1.0f : -1.0f;
@@ -130,6 +130,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             }
         }
         else {
+            anim.speed = 1f;
             anim.SetBool("is_walking", false);
         }
 
@@ -178,6 +179,12 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     {
         health.reset();
         transform.position = respawn_point;
+
+        anim.speed = 1f;
+        anim.SetBool("is_walking", false);
+        anim.SetTrigger("respawn");
+
+        detector.reset();
 
         StopAllCoroutines();
         current_state = State.SLEEPING;
@@ -307,8 +314,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         is_walking = true;
 
-        //anim.SetBool("is_walking", true);
-
         dir = (Random.value <= 0.5f ? -1f : 1f);
         aim = Vector2.right * dir;
 
@@ -345,7 +350,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 aim = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
             }
             //Debug.DrawRay(transform.position, aim);
-            //AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
+            AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
+            //AimIK.position = (Vector2)transform.position + aim;
             
             if (!is_on_edge) {
                 if (angle > MaxGunElevation || angle < MaxGunDepression)
@@ -363,10 +369,13 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 is_walking = false;
             }
 
-            timer -= Time.deltaTime;
-            if (timer <= 0)
+            if (detector.IsVisible)
             {
-                is_timer_complete = true;
+                timer -= Time.deltaTime;
+                if (timer <= 0)
+                {
+                    is_timer_complete = true;
+                }
             }
 
             yield return new WaitForFixedUpdate();
@@ -463,6 +472,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     IEnumerator doDeathState(State prev) {
         current_state = State.DEAD;
         anim.speed = 1f;
+        anim.SetBool("is_walking", false);
+        anim.SetBool("is_knockedback", false);
         anim.SetTrigger("die");
         yield return new WaitForSeconds(3.0f);
     }
@@ -494,7 +505,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 break;
             case State.SLEEPING: Gizmos.color = Color.grey;
                 break;
-            case State.IDLE: Gizmos.color = Color.white;
+            case State.IDLE: Gizmos.color = Color.cyan;
                 break;
         }
 

@@ -18,6 +18,7 @@ public class Player : CustomPhysicsObject, IAttackable
     Energy energy;
     public Grapple grapple;
     public GameObject DashIndicatorPrefab;
+    public GameObject AITriggerPrefab;
 
     public Vector3 respawn_point;
     //made that public so I could make sure the checkpoints were working
@@ -101,6 +102,9 @@ public class Player : CustomPhysicsObject, IAttackable
 
         GameObject dash = Instantiate(DashIndicatorPrefab);
         DashIndicator = dash.GetComponent<SpriteRenderer>();
+
+        GameObject ai_trigger = Instantiate(AITriggerPrefab);
+        ai_trigger.GetComponent<ProximityTrigger>().Target = transform;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -369,7 +373,6 @@ public class Player : CustomPhysicsObject, IAttackable
         transform.position = respawn_point;
 
         health.reset();
-        GetComponent<TrailRenderer>().Clear();
     }
     void onActiveDeviceChanged(InputDevice active) {
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");

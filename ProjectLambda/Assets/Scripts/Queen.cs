@@ -39,7 +39,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
     AIFlag PatrolBoundary;
     Health health;
-    ProximityDetector detector;
+    ProximitySwitch detector;
 
     LayerMask visibility_mask;
     LayerMask walkable_mask;
@@ -102,9 +102,9 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         health = GetComponent<Health>();
         health.OnCharacterDeath += die;
 
-        detector = GetComponent<ProximityDetector>();
-        detector.onCameraEnter += activateAI;
-        detector.onCameraExit += deactivateAI;
+        detector = GetComponent<ProximitySwitch>();
+        detector.onSwitchOn += activateAI;
+        detector.onSwitchOff += deactivateAI;
 
         player = GameObject.Find("Player");
         Player p = player.GetComponent<Player>();
@@ -119,7 +119,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         rotations = new List<float>();
     }
     void FixedUpdate() {
-        if (!detector.IsVisible)
+        if (!detector.IsSwitchedOn)
         {
             return;
         }
@@ -159,6 +159,8 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     void playerDeath() {
         health.reset();
         transform.position = respawn_point;
+
+        detector.reset();
 
         StopAllCoroutines();
         current_state = State.SLEEPING;
@@ -360,43 +362,48 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         float spawn_delay = 5f;
         while (true)
         {
-            if (shoot_delay <= 0)
+            if (detector.IsVisible)
             {
-                Vector2 player_dir = (player.transform.position - transform.position);
-                if (player_dir.magnitude >= 3)
+                if (shoot_delay <= 0)
                 {
-                    player_dir.Normalize();
-                    foreach(Transform child in active_children)
+                    Vector2 player_dir = (player.transform.position - transform.position);
+                    if (player_dir.magnitude >= 3)
                     {
-
-                        Vector2 child_dir = (child.position - transform.position).normalized;
-                        float sim = Vector2.Dot(player_dir, child_dir);
-
-                        if (sim > 0.99f)
+                        player_dir.Normalize();
+                        foreach (Transform child in active_children)
                         {
-                            Instantiate(BulletPrefab, child.position, Quaternion.LookRotation(Vector3.forward, (player.transform.position - child.position)));
-                            shoot_delay = 0.4f;
+
+                            Vector2 child_dir = (child.position - transform.position).normalized;
+                            float sim = Vector2.Dot(player_dir, child_dir);
+
+                            if (sim > 0.99f)
+                            {
+                                Instantiate(BulletPrefab, child.position, Quaternion.LookRotation(Vector3.forward, (player.transform.position - child.position)));
+                                shoot_delay = 0.4f;
+                            }
                         }
                     }
                 }
-            }
-            else {
-                shoot_delay -= Time.deltaTime;
-            }
-            if (active_children.Count < MaxNumChildren)
-            {
-                if (reset_spawn_timer) {
-                    reset_spawn_timer = false;
-                    spawn_delay = 5f;
-                }
-                if (spawn_delay <= 0)
-                {
-                    spawn_drone = true;
-                    spawn_delay = 5f;
-                }
                 else
                 {
-                    spawn_delay -= Time.deltaTime;
+                    shoot_delay -= Time.deltaTime;
+                }
+                if (active_children.Count < MaxNumChildren)
+                {
+                    if (reset_spawn_timer)
+                    {
+                        reset_spawn_timer = false;
+                        spawn_delay = 5f;
+                    }
+                    if (spawn_delay <= 0)
+                    {
+                        spawn_drone = true;
+                        spawn_delay = 5f;
+                    }
+                    else
+                    {
+                        spawn_delay -= Time.deltaTime;
+                    }
                 }
             }
             yield return new WaitForFixedUpdate();
