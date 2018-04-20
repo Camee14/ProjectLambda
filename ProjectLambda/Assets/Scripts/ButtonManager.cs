@@ -8,6 +8,7 @@ using InControl;
 
 public class ButtonManager : MonoBehaviour {
 
+    public bool CanvasVisibleAtStart = true;
     public delegate void MenuDisplayEvent(bool state);
 
     public event MenuDisplayEvent onMenuDisplayChanged;
@@ -20,7 +21,7 @@ public class ButtonManager : MonoBehaviour {
     void Awake() {
         canvas = GetComponent<Canvas>();
 
-        canvas.enabled = false;
+        canvas.enabled = CanvasVisibleAtStart;
         p_state = false;
     }
 
