@@ -2,24 +2,41 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using InControl;
 
 public class ButtonManager : MonoBehaviour {
 
-    private InputDevice Controller;
-    public GameObject canvas;
+    public delegate void MenuDisplayEvent(bool state);
 
-    private void Update()
+    public event MenuDisplayEvent onMenuDisplayChanged;
+
+    Canvas canvas;
+    short wait_for_reset;
+
+    bool p_state;
+
+    void Awake() {
+        canvas = GetComponent<Canvas>();
+
+        canvas.enabled = false;
+        p_state = false;
+    }
+
+    void Update()
     {
-        Controller = InputManager.ActiveDevice;
-
-        if (Controller.MenuWasPressed)
+        if (onMenuDisplayChanged != null && (p_state != canvas.enabled))
         {
-            if(canvas.activeInHierarchy == false)
-            {
-                canvas.SetActive(true);
-                Time.timeScale = 0;
-            }
+            onMenuDisplayChanged(canvas.enabled);
+            p_state = canvas.enabled;
+        }
+
+
+        if (InputManager.ActiveDevice.MenuWasPressed)
+        {
+            canvas.enabled = !canvas.enabled;
+            Time.timeScale = canvas.enabled ? 0 : 1;
         }
     }
 
@@ -35,7 +52,7 @@ public class ButtonManager : MonoBehaviour {
     public void resumeBtnPress()
     {
         Time.timeScale = 1;
-        canvas.SetActive(false);
+        canvas.enabled = false;
+        wait_for_reset = 3;
     }
-
 }
