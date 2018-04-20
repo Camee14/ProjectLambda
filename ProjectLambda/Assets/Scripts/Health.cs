@@ -8,7 +8,7 @@ public class Health : MonoBehaviour {
     public int MaxHealth = 100;
     public bool Invincibility = false;
 
-    public int current_health;
+    int current_health;
     bool is_invincible = false;
 
     public delegate void HealthDamagedEvent(int hp, int max);
@@ -17,10 +17,11 @@ public class Health : MonoBehaviour {
     public event HealthDamagedEvent OnHealthDamaged;
     public event DeathEvent OnCharacterDeath;
 
-    public Image HealthBar;
-
     public bool IsInvincible {
         get { return Invincibility || is_invincible; }
+    }
+    public float Percentage {
+        get { return (float)current_health / MaxHealth; }
     }
 
     void Awake() {
@@ -38,13 +39,14 @@ public class Health : MonoBehaviour {
             return false;
         }
         current_health = Mathf.Clamp(current_health += ammount, 0, MaxHealth);
+        if (OnHealthDamaged != null)
+        {
+            OnHealthDamaged(current_health, MaxHealth);
+        }
         if (OnCharacterDeath != null && current_health == 0)
         {
             OnCharacterDeath();
             return true;
-        }
-        else if (OnHealthDamaged != null) {
-            OnHealthDamaged(current_health, MaxHealth);
         }
         return false;
 
@@ -58,9 +60,5 @@ public class Health : MonoBehaviour {
     }
     public void setInvincible(bool active) {
         is_invincible = active;
-    }
-    public void healthBar()
-    {
-        HealthBar.fillAmount = (float)current_health / (float)MaxHealth;
     }
 }

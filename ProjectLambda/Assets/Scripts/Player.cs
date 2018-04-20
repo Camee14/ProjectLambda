@@ -23,9 +23,11 @@ public class Player : CustomPhysicsObject, IAttackable
 
     public delegate void PlayerDeathEvent();
     public delegate void PlayerRespawnChangedEvent();
+    public delegate void PlayerRespawnEvent();
 
     public event PlayerDeathEvent onPlayerDeath;
     public event PlayerRespawnChangedEvent onPlayerRespawnChanged;
+    public event PlayerRespawnChangedEvent onPlayerRespawn;
 
     LongButtonPressDetector detector;
 
@@ -222,8 +224,6 @@ public class Player : CustomPhysicsObject, IAttackable
 
         transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * Facing, transform.localScale.y, transform.localScale.z);
 
-        health.healthBar();
-
         detector.Update();
     }
     protected override void fixedUpdate()
@@ -352,6 +352,10 @@ public class Player : CustomPhysicsObject, IAttackable
 
         health.reset();
         GetComponent<TrailRenderer>().Clear();
+
+        if (onPlayerRespawn != null) {
+            onPlayerRespawn();
+        }
     }
     void onActiveDeviceChanged(InputDevice active) {
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");

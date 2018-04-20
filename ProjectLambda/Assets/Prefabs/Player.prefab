@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 114861918270975176}
   - component: {fileID: 114968467724419896}
   - component: {fileID: 114772282500575062}
+  - component: {fileID: 114444402674873626}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -118,7 +119,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1335759214423424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 85.7, y: -0.3, z: 0}
+  m_LocalPosition: {x: 206.1, y: 8, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_Children:
   - {fileID: 4429438865229946}
@@ -314,6 +315,22 @@ TrailRenderer:
     generateLightingData: 0
   m_MinVertexDistance: 0.1
   m_Autodestruct: 0
+--- !u!114 &114444402674873626
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1335759214423424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d47c747d4bd9734eb20b90b858fb805, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HealthBar: {fileID: 0}
+  EnergyBar:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!114 &114745566186501726
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -368,7 +385,6 @@ MonoBehaviour:
   RespawnY: -250
   grapple: {fileID: 114745566186501726}
   respawn_point: {x: -76.4, y: 10.6, z: 0}
-  HealthBar: {fileID: 0}
 --- !u!114 &114968467724419896
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -382,7 +398,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxHealth: 40
   Invincibility: 0
-  current_health: 0
 --- !u!120 &120801903166874640
 LineRenderer:
   m_ObjectHideFlags: 1

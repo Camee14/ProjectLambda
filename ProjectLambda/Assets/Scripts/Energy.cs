@@ -5,6 +5,15 @@ using UnityEngine;
 public class Energy : MonoBehaviour {
     public int EnergyCharges = 3;
     public double BaseRechargeRate = 5;
+
+    public delegate void ChargesUsedEvent(int index, int count);
+    public delegate void MaxChargesChangedEvent(int old_count, int new_count);
+    public delegate void ChargingEvent(int index, double value);
+
+    public event ChargesUsedEvent onUsedCharge;
+    public event MaxChargesChangedEvent onMaxChargesChanged;
+    public event ChargingEvent onChargingUp;
+
     List<double> charges;
     int full_charges = 0;
 
@@ -26,6 +35,10 @@ public class Energy : MonoBehaviour {
         charges.RemoveRange(index, num);
         full_charges -= num;
 
+        if (onUsedCharge != null) {
+            onUsedCharge(index, num);
+        }
+
         return true;
     }
     void Update() {
@@ -39,6 +52,9 @@ public class Energy : MonoBehaviour {
             if (charges[last_index] >= 100) {
                 charges[last_index] = 100;
                 full_charges++;
+            }
+            if (onChargingUp != null) {
+                onChargingUp(last_index, charges[last_index]);
             }
         }
     }
