@@ -437,10 +437,10 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
         while (true)
         {
-            velocity += rb2d.mass * Physics2D.gravity * Time.deltaTime;
-            rb2d.position += velocity * Time.deltaTime;
+            velocity += 2.5f * Physics2D.gravity * Time.deltaTime;
 
-            int count = rb2d.Cast(velocity, filter, hits, velocity.magnitude);
+            Vector2 dir = velocity * Time.deltaTime;
+            int count = rb2d.Cast(dir, filter, hits, dir.magnitude);
             if (count > 0) {
                 break;
             }

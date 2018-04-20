@@ -47,7 +47,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     float dir = -1f;
     bool is_walking = false;
     bool is_on_edge = false;
-    bool is_stunned = false;
 
     AIFlag PatrolBoundary;
 
@@ -60,10 +59,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     Health health;
     ProximitySwitch detector;
     
-
     Vector2 aim;
     Vector2 respawn_point;
-    Vector2 default_gun_pos;
 
     protected override void awake()
     {
@@ -90,8 +87,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         aim = Vector2.right * Facing;
 
-        default_gun_pos = AimIK.position;
-
         transitionToState(doIdleState(current_state));
     }
     protected override void update()
@@ -108,8 +103,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             return;
         }
         Facing = aim.x >= 0 ? 1.0f : -1.0f;
-
-        State prev = current_state;
 
         updateTransitionBools();
         checkStateTransitions();
@@ -301,6 +294,12 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         Anim.SetBool("is_stunned", current_state == State.STUNNED);
         Anim.SetBool("is_knockedback", current_state == State.KNOCKED_BACK);
         Anim.speed = (is_walking && current_state == State.MANOEUVRING) ? 0.25f : 1f;
+
+        AimIK.gameObject.SetActive(current_state == State.MANOEUVRING || current_state == State.FIRING);
+        if (AimIK.gameObject.activeSelf) {
+            AimIK.position = Vector2.Lerp(AimIK.position, (Vector2)transform.position + aim.normalized * 10f, 25f * Time.deltaTime);
+        }
+
         if (current_state == State.DEAD && prev_anim_state != State.DEAD) {
             Anim.SetTrigger("die");
         }
@@ -342,7 +341,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         is_timer_complete = false;
 
         float timer = Random.Range(MinFiringPause, MaxFiringPause);
-
+        
         while (true)
         {
             aim = (player.transform.position - transform.position);
@@ -358,9 +357,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             {
                 aim = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
             }
-            //AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
-            //AimIK.position = (Vector2)transform.position + aim;
-            
+
             if (!is_on_edge) {
                 if (angle > MaxGunElevation || angle < MaxGunDepression)
                 {
@@ -397,7 +394,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         while (bursts_fired < NumShotsInBurst)
         {
-            Instantiate(BulletPrefab, GunBarrel.position, Quaternion.LookRotation(Vector3.forward, aim));
+            Instantiate(BulletPrefab, GunBarrel.position, Quaternion.LookRotation(Vector3.forward, AimIK.position - transform.position));
             bursts_fired++;
 
             yield return new WaitForSeconds(RateOfFire);
@@ -419,7 +416,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         
             while (stun_time > 0f)
             {
-                //Velocity = Vector2.Lerp(Velocity, Vector2.zero, Velocity.magnitude * Time.deltaTime);
                 Velocity = dir * pow;
                 pow -= 1200 * Time.deltaTime;
                 if (pow < 0)
