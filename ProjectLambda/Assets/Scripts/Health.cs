@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 public class Health : MonoBehaviour {
     public int MaxHealth = 100;
@@ -14,6 +16,8 @@ public class Health : MonoBehaviour {
 
     public event HealthDamagedEvent OnHealthDamaged;
     public event DeathEvent OnCharacterDeath;
+
+    public Image HealthBar;
 
     public bool IsInvincible {
         get { return Invincibility || is_invincible; }
@@ -54,5 +58,9 @@ public class Health : MonoBehaviour {
     }
     public void setInvincible(bool active) {
         is_invincible = active;
+    }
+    public void healthBar()
+    {
+        HealthBar.fillAmount = (float)current_health / (float)MaxHealth;
     }
 }

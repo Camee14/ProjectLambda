@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using InControl;
 
 public class Player : CustomPhysicsObject, IAttackable
@@ -211,6 +212,8 @@ public class Player : CustomPhysicsObject, IAttackable
         }
 
         transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * Facing, transform.localScale.y, transform.localScale.z);
+
+        health.healthBar();
 
         detector.Update();
     }
