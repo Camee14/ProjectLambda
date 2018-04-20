@@ -1957,54 +1957,7 @@ Prefab:
       propertyPath: Target
       value: 
       objectReference: {fileID: 219387729}
-    - target: {fileID: 124039287926992204, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MinPlayerX
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MaxPlayerX
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MinPlayerY
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MaxPlayerY
-      value: 0.8
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MinPercentageX
-      value: 0.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MaxPercentageX
-      value: 0.6
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MinPercentageY
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 114243988268545714, guid: f4df1a39821107b4da6bef08ce48dd7c,
-        type: 2}
-      propertyPath: MaxPercentageY
-      value: 0.8
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 114256880605804322, guid: f4df1a39821107b4da6bef08ce48dd7c, type: 2}
-    - {fileID: 124039287926992204, guid: f4df1a39821107b4da6bef08ce48dd7c, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f4df1a39821107b4da6bef08ce48dd7c, type: 2}
   m_IsPrefabParent: 0
 --- !u!1001 &1361434155
