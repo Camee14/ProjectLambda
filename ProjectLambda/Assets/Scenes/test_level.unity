@@ -11232,22 +11232,22 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 114444402674873626, guid: 7eef1456d8c23534aa2acde5c17ea882,
+    - target: {fileID: 114552414132934998, guid: 7eef1456d8c23534aa2acde5c17ea882,
         type: 2}
       propertyPath: HealthBar
       value: 
       objectReference: {fileID: 2066390057}
-    - target: {fileID: 114444402674873626, guid: 7eef1456d8c23534aa2acde5c17ea882,
+    - target: {fileID: 114552414132934998, guid: 7eef1456d8c23534aa2acde5c17ea882,
         type: 2}
       propertyPath: EnergyBar.Array.data[0]
       value: 
       objectReference: {fileID: 390563323}
-    - target: {fileID: 114444402674873626, guid: 7eef1456d8c23534aa2acde5c17ea882,
+    - target: {fileID: 114552414132934998, guid: 7eef1456d8c23534aa2acde5c17ea882,
         type: 2}
       propertyPath: EnergyBar.Array.data[1]
       value: 
       objectReference: {fileID: 1212226941}
-    - target: {fileID: 114444402674873626, guid: 7eef1456d8c23534aa2acde5c17ea882,
+    - target: {fileID: 114552414132934998, guid: 7eef1456d8c23534aa2acde5c17ea882,
         type: 2}
       propertyPath: EnergyBar.Array.data[2]
       value: 
