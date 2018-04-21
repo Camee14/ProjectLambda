@@ -2952,6 +2952,11 @@ Prefab:
       propertyPath: m_LocalScale.z
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114374423310429312, guid: ff1898006091c044a85e928451b767ae,
+        type: 2}
+      propertyPath: hasReachedCheckpoint
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ff1898006091c044a85e928451b767ae, type: 2}
   m_IsPrefabParent: 0
@@ -10662,7 +10667,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1171279993081618, guid: 4eba86d11f6d76a438c4405fbc2968f2, type: 2}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4eba86d11f6d76a438c4405fbc2968f2, type: 2}
