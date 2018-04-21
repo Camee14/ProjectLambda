@@ -10,6 +10,7 @@ TagManager:
   - Terrain
   - Projectile
   - MovingTerrain
+  - Menu
   layers:
   - Default
   - TransparentFX

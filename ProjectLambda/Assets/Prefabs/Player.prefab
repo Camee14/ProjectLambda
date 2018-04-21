@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 114861918270975176}
   - component: {fileID: 114968467724419896}
   - component: {fileID: 114772282500575062}
+  - component: {fileID: 114444402674873626}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -239,6 +240,22 @@ TrailRenderer:
     generateLightingData: 0
   m_MinVertexDistance: 0.1
   m_Autodestruct: 0
+--- !u!114 &114444402674873626
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1335759214423424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d47c747d4bd9734eb20b90b858fb805, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HealthBar: {fileID: 0}
+  EnergyBar:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!114 &114745566186501726
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -309,7 +326,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxHealth: 100
   Invincibility: 0
-  current_health: 100
 --- !u!120 &120801903166874640
 LineRenderer:
   m_ObjectHideFlags: 1
