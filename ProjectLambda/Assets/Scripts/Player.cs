@@ -18,6 +18,7 @@ public class Player : CustomPhysicsObject, IAttackable
     Health health;
     Energy energy;
     public Grapple grapple;
+    public Animator SwordEffectAnim;
     public GameObject DashIndicatorPrefab;
     public GameObject AITriggerPrefab;
 
@@ -46,7 +47,6 @@ public class Player : CustomPhysicsObject, IAttackable
     short basic_attack_count = 0;
     short attack_charges = 0;
 
-    //bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
     bool jump_down_on_unpause = false;
@@ -349,16 +349,7 @@ public class Player : CustomPhysicsObject, IAttackable
         if (!DrawDebug) {
             return;
         }
-
-        float percentage = (attack_timer / BasicAttackRate);
-        if (percentage < 0) {
-            percentage = 0;
-        }
-        Gizmos.color = Color.green;
-        Gizmos.DrawCube(transform.position + transform.up * 2, new Vector3(3f * percentage, 1f, 1f));
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position + transform.up * 2, new Vector3(3f, 1f, 1f));
+        Gizmos.DrawWireCube(transform.position + new Vector3(Facing * 1.5f, 0.5f), new Vector3(2f, 2f, 1f));
     }
     void setBulletTime(bool enabled) {
         Time.timeScale = (enabled ? 0.05f : 1f);
@@ -422,7 +413,8 @@ public class Player : CustomPhysicsObject, IAttackable
     }
     void doBasicAttack(Vector2 dir)
     {
-        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (Vector3.right * 2) * Facing, new Vector2(3f, 3), 0f, enemy_mask);
+        SwordEffectAnim.Play("SwordSlashDown", 0);
+        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + new Vector3(Facing * 1.5f, 0.5f), new Vector2(2f, 2f), 0f, enemy_mask);
         if (cols.Length != 0)
         {
             foreach (Collider2D col in cols)

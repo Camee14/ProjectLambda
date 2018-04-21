@@ -3032,6 +3032,29 @@ Prefab:
       propertyPath: EnergyBar.Array.data[2]
       value: 
       objectReference: {fileID: 1688225884}
+    - target: {fileID: 212096651479941224, guid: 7eef1456d8c23534aa2acde5c17ea882,
+        type: 2}
+      propertyPath: m_Size.x
+      value: 10.24
+      objectReference: {fileID: 0}
+    - target: {fileID: 212096651479941224, guid: 7eef1456d8c23534aa2acde5c17ea882,
+        type: 2}
+      propertyPath: m_Size.y
+      value: 10.24
+      objectReference: {fileID: 0}
+    - target: {fileID: 212096651479941224, guid: 7eef1456d8c23534aa2acde5c17ea882,
+        type: 2}
+      propertyPath: m_WasSpriteAssigned
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171180518204970, guid: 7eef1456d8c23534aa2acde5c17ea882, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0.345
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171180518204970, guid: 7eef1456d8c23534aa2acde5c17ea882, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0.197
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 7eef1456d8c23534aa2acde5c17ea882, type: 2}
   m_IsPrefabParent: 0
