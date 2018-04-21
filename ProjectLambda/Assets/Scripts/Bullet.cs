@@ -24,6 +24,10 @@ public class Bullet : MonoBehaviour {
         if ((col.tag == "Player" && !player_is_target) || (col.tag == "Enemy" && player_is_target)) {
             return;
         }
+        Health h = col.GetComponent<Health>();
+        if (h != null && !h.isAlive()) {
+            return;
+        }
         IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
         if (ab != null) {
             if (ab.isInvincible()) {

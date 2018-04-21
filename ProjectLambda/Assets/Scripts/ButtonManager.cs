@@ -7,36 +7,42 @@ using UnityEngine.EventSystems;
 using InControl;
 
 public class ButtonManager : MonoBehaviour {
-
+    public Canvas PauseMenu;
+    public Canvas EndOfLevel;
     public bool CanvasVisibleAtStart = true;
+
     public delegate void MenuDisplayEvent(bool state);
 
     public event MenuDisplayEvent onMenuDisplayChanged;
 
-    Canvas canvas;
-
+    bool can_pause = true;
     bool p_state;
 
     void Awake() {
-        canvas = GetComponent<Canvas>();
-
-        canvas.enabled = CanvasVisibleAtStart;
+        if (PauseMenu == null)
+        {
+            return;
+        }
+        PauseMenu.enabled = CanvasVisibleAtStart;
         p_state = false;
     }
 
     void Update()
     {
-        if (onMenuDisplayChanged != null && (p_state != canvas.enabled))
+        if (PauseMenu == null) {
+            return;
+        }
+        if (onMenuDisplayChanged != null && (p_state != PauseMenu.enabled))
         {
-            onMenuDisplayChanged(canvas.enabled);
-            p_state = canvas.enabled;
+            onMenuDisplayChanged(PauseMenu.enabled);
+            p_state = PauseMenu.enabled;
         }
 
 
-        if (InputManager.ActiveDevice.MenuWasPressed)
+        if (InputManager.ActiveDevice.MenuWasPressed && can_pause)
         {
-            canvas.enabled = !canvas.enabled;
-            Time.timeScale = canvas.enabled ? 0 : 1;
+            PauseMenu.enabled = !PauseMenu.enabled;
+            Time.timeScale = PauseMenu.enabled ? 0 : 1;
         }
     }
 
@@ -52,6 +58,17 @@ public class ButtonManager : MonoBehaviour {
     public void resumeBtnPress()
     {
         Time.timeScale = 1;
-        canvas.enabled = false;
+        PauseMenu.enabled = false;
+    }
+    public void showEndOfLevelUI() {
+        can_pause = false;
+        EndOfLevel.enabled = true;
+
+        if (onMenuDisplayChanged != null)
+        {
+            onMenuDisplayChanged(true);
+        }
+
+        Time.timeScale = 0;
     }
 }
