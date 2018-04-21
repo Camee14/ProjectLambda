@@ -24,6 +24,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     public float Magnitude = 1.5f;
     public float MinClearance = 1f;
     public int MaxNumChildren = 3;
+    public Animator Anim;
     public GameObject ShooterDrone;
     public GameObject BulletPrefab;
     public bool DrawAIDebug = false;
@@ -37,9 +38,11 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     GameObject player;
     Transform children;
 
+    Shield shield;
+
     AIFlag PatrolBoundary;
     Health health;
-    ProximityDetector detector;
+    ProximitySwitch detector;
 
     LayerMask visibility_mask;
     LayerMask walkable_mask;
@@ -55,14 +58,14 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     float local_time = 0;
     bool do_spin = true;
     bool reset_spawn_timer = false;
-    bool is_shielded = false;
 
     public void attack(int dmg, Vector2 dir, float pow, float stun_time = 0)
     {
-        if (current_state == State.DEAD || is_shielded)
+        if (current_state == State.DEAD || shield.isActive)
         {
             return;
         }
+        Anim.SetTrigger("stun");
         health.apply(-dmg);
     }
     public void knockback(Vector2 dir, float pow, float hang_time = 0f)
@@ -71,7 +74,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     }
     public bool isInvincible()
     {
-        return is_shielded;
+        return shield.isActive;
     }
     public bool isStunned()
     {
@@ -93,7 +96,9 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         rotations.RemoveAt(index);
         Destroy(t.gameObject);
 
-        is_shielded = (active_children.Count != 0);
+        if (active_children.Count == 0) {
+            shield.setActive(false);
+        }
         reset_spawn_timer = true;
     }
     void Awake() {
@@ -102,9 +107,9 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         health = GetComponent<Health>();
         health.OnCharacterDeath += die;
 
-        detector = GetComponent<ProximityDetector>();
-        detector.onCameraEnter += activateAI;
-        detector.onCameraExit += deactivateAI;
+        detector = GetComponent<ProximitySwitch>();
+        detector.onSwitchOn += activateAI;
+        detector.onSwitchOff += deactivateAI;
 
         player = GameObject.Find("Player");
         Player p = player.GetComponent<Player>();
@@ -114,12 +119,14 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         visibility_mask = LayerMask.GetMask("Grappleable", "DynamicPlatform");
         walkable_mask = LayerMask.GetMask("Grappleable");
 
+        shield = transform.GetChild(1).GetComponent<Shield>();
+
         children = transform.GetChild(0);
         active_children = new List<Transform>();
         rotations = new List<float>();
     }
     void FixedUpdate() {
-        if (!detector.IsVisible)
+        if (!detector.IsSwitchedOn)
         {
             return;
         }
@@ -131,7 +138,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         {
             for (int i = 0; i < active_children.Count; i++)
             {
-                doChildRotation(i, 90, true);
+                doChildRotation(i, 45, true);
             }
         }
     }
@@ -155,10 +162,15 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     void die()
     {
         transitionToState(doDeathState(current_state));
+        Anim.SetTrigger("die");
     }
     void playerDeath() {
         health.reset();
         transform.position = respawn_point;
+
+        Anim.SetTrigger("respawn");
+
+        detector.reset();
 
         StopAllCoroutines();
         current_state = State.SLEEPING;
@@ -196,7 +208,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         setChildPosition(active_children[index], rotations[index], do_offset);
     }
     void setChildPosition(Transform c, float a, bool do_offset) {
-        float radius = 1.5f;
+        float radius = 2f;
         if (do_offset)
         {
             local_time += Time.deltaTime;
@@ -336,7 +348,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
             setChildPosition(active_children[active_children.Count - 1], a, false);
         }
-        is_shielded = true;
+        shield.setActive(true);
         do_spin = true;
         health.setInvincible(false);
 
@@ -360,43 +372,48 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         float spawn_delay = 5f;
         while (true)
         {
-            if (shoot_delay <= 0)
+            if (detector.IsVisible)
             {
-                Vector2 player_dir = (player.transform.position - transform.position);
-                if (player_dir.magnitude >= 3)
+                if (shoot_delay <= 0)
                 {
-                    player_dir.Normalize();
-                    foreach(Transform child in active_children)
+                    Vector2 player_dir = (player.transform.position - transform.position);
+                    if (player_dir.magnitude >= 3)
                     {
-
-                        Vector2 child_dir = (child.position - transform.position).normalized;
-                        float sim = Vector2.Dot(player_dir, child_dir);
-
-                        if (sim > 0.99f)
+                        player_dir.Normalize();
+                        foreach (Transform child in active_children)
                         {
-                            Instantiate(BulletPrefab, child.position, Quaternion.LookRotation(Vector3.forward, (player.transform.position - child.position)));
-                            shoot_delay = 0.4f;
+
+                            Vector2 child_dir = (child.position - transform.position).normalized;
+                            float sim = Vector2.Dot(player_dir, child_dir);
+
+                            if (sim > 0.99f)
+                            {
+                                Instantiate(BulletPrefab, child.position, Quaternion.LookRotation(Vector3.forward, (player.transform.position - child.position)));
+                                shoot_delay = 0.4f;
+                            }
                         }
                     }
                 }
-            }
-            else {
-                shoot_delay -= Time.deltaTime;
-            }
-            if (active_children.Count < MaxNumChildren)
-            {
-                if (reset_spawn_timer) {
-                    reset_spawn_timer = false;
-                    spawn_delay = 5f;
-                }
-                if (spawn_delay <= 0)
-                {
-                    spawn_drone = true;
-                    spawn_delay = 5f;
-                }
                 else
                 {
-                    spawn_delay -= Time.deltaTime;
+                    shoot_delay -= Time.deltaTime;
+                }
+                if (active_children.Count < MaxNumChildren)
+                {
+                    if (reset_spawn_timer)
+                    {
+                        reset_spawn_timer = false;
+                        spawn_delay = 5f;
+                    }
+                    if (spawn_delay <= 0)
+                    {
+                        spawn_drone = true;
+                        spawn_delay = 5f;
+                    }
+                    else
+                    {
+                        spawn_delay -= Time.deltaTime;
+                    }
                 }
             }
             yield return new WaitForFixedUpdate();
@@ -420,10 +437,10 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
         while (true)
         {
-            velocity += rb2d.mass * Physics2D.gravity * Time.deltaTime;
-            rb2d.position += velocity * Time.deltaTime;
+            velocity += 2.5f * Physics2D.gravity * Time.deltaTime;
 
-            int count = rb2d.Cast(velocity, filter, hits, velocity.magnitude);
+            Vector2 dir = velocity * Time.deltaTime;
+            int count = rb2d.Cast(dir, filter, hits, dir.magnitude);
             if (count > 0) {
                 break;
             }
@@ -434,12 +451,6 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         }
         while (true) {
             yield return new WaitForFixedUpdate();
-        }
-    }
-    void OnDrawGizmos() {
-        if (is_shielded) {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(transform.position, .7f);
         }
     }
 }

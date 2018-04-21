@@ -18,7 +18,11 @@ MonoBehaviour:
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/torso
     localPosition: {x: 0.23999932, y: 0.000000014901161, z: 0}
-    localRotation: {x: 0, y: 0, z: 0.76322883, w: 0.6461283}
+    localRotation: {x: 0, y: 0, z: 0.7619356, w: 0.64765286}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/hip/torso/Barrel
+    localPosition: {x: 2.1200023, y: 0.0000011920929, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.002339686, w: -0.99999726}
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/right_upper_leg_static
     localPosition: {x: 0.16084433, y: 0.119762436, z: 0}
@@ -26,15 +30,15 @@ MonoBehaviour:
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/right_upper_leg_static/right_upper_leg
     localPosition: {x: 0.23999913, y: 0.00000085681677, z: 0}
-    localRotation: {x: 0, y: 0, z: -0.045346737, w: 0.99897134}
+    localRotation: {x: 0, y: 0, z: -0.045348298, w: 0.9989712}
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/right_upper_leg_static/right_upper_leg/right_lower_leg
     localPosition: {x: 0.34000114, y: -0.0000007246854, z: 0}
-    localRotation: {x: 0, y: 0, z: -0.477393, w: 0.8786899}
+    localRotation: {x: 0, y: 0, z: -0.47739184, w: 0.87869054}
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/right_upper_leg_static/right_upper_leg/right_lower_leg/right_foot
     localPosition: {x: 0.7400017, y: 0.0000007748604, z: 0}
-    localRotation: {x: 0, y: 0, z: -0.36096236, w: 0.9325804}
+    localRotation: {x: 0, y: 0, z: -0.3605343, w: 0.932746}
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/left_upper_leg_static
     localPosition: {x: 0.27764565, y: -0.12989043, z: 0}
@@ -42,11 +46,11 @@ MonoBehaviour:
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/left_upper_leg_static/left_upper_leg
     localPosition: {x: 0.29999936, y: 0.00000037252903, z: 0}
-    localRotation: {x: 0, y: 0, z: 0.35223106, w: 0.9359131}
+    localRotation: {x: 0, y: 0, z: 0.3522306, w: 0.93591326}
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/left_upper_leg_static/left_upper_leg/left_lower_leg
     localPosition: {x: 0.9000014, y: -0.0000007748604, z: 0}
-    localRotation: {x: 0, y: 0, z: -0.7838039, w: 0.62100846}
+    localRotation: {x: 0, y: 0, z: -0.783804, w: 0.6210084}
     localScale: {x: 1, y: 1, z: 1}
   - path: Bones/hip/left_upper_leg_static/left_upper_leg/left_lower_leg/left_foot
     localPosition: {x: 0.7900004, y: 0.0000013709068, z: 0}

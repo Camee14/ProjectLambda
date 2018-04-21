@@ -11,6 +11,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         MANOEUVRING,
         FIRING,
         STUNNED,
+        KNOCKED_BACK,
         DEAD
     };
 
@@ -22,6 +23,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     public float MaxFiringPause = 5f;
     public float RateOfFire = 0.25f;
     public short NumShotsInBurst = 3;
+    public Animator Anim;
     public GameObject BulletPrefab;
     public Transform GunBarrel;
     public Transform AimIK;
@@ -29,6 +31,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
     IEnumerator current_coroutine;
     State current_state = State.SLEEPING;
+    State prev_anim_state = State.SLEEPING;
 
     //transition booleans
     bool in_combat = false;
@@ -54,12 +57,10 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     ParticleSystem HitParticles;
 
     Health health;
-    ProximityDetector detector;
-    Animator anim;
-
+    ProximitySwitch detector;
+    
     Vector2 aim;
     Vector2 respawn_point;
-    Vector2 default_gun_pos;
 
     protected override void awake()
     {
@@ -76,19 +77,15 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         health = GetComponent<Health>();
         health.OnCharacterDeath += die;
 
-        detector = GetComponent<ProximityDetector>();
-        detector.onCameraEnter += activateAI;
-        detector.onCameraExit += deactivateAI;
+        detector = GetComponent<ProximitySwitch>();
+        detector.onSwitchOn += activateAI;
+        detector.onSwitchOff += deactivateAI;
 
         HitParticles = transform.Find("SparkParticles").GetComponent<ParticleSystem>();
-
-        anim = transform.GetChild(2).GetComponent<Animator>();
 
         OverrideAutoFacing = true;
 
         aim = Vector2.right * Facing;
-
-        default_gun_pos = AimIK.position;
 
         transitionToState(doIdleState(current_state));
     }
@@ -102,7 +99,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     {
         base.fixedUpdate();
 
-        if (!detector.IsVisible) {
+        if (!detector.IsSwitchedOn) {
             return;
         }
         Facing = aim.x >= 0 ? 1.0f : -1.0f;
@@ -110,34 +107,29 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         updateTransitionBools();
         checkStateTransitions();
         checkBoundaries();
+        updateAnimations();
     }
     protected override Vector2 setInputAcceleration()
     {
         Vector2 input = Vector2.zero;
 
-        if (is_walking)
+        if (is_walking && health.isAlive())
         {
-            anim.SetBool("is_walking", true);
             if (current_state == State.WALKING && IsGrounded)
             {
                 input.x = dir * WalkSpeed;
-                anim.speed = 1f;
             }
             else if (current_state == State.MANOEUVRING && IsGrounded)
             {
                 input.x = dir * (WalkSpeed / 4);
-                anim.speed = 0.25f;
             }
-        }
-        else {
-            anim.SetBool("is_walking", false);
         }
 
         return input;
     }
     public bool isStunned()
     {
-        return current_state == State.STUNNED;
+        return current_state == State.STUNNED || current_state == State.KNOCKED_BACK;
     }
     public bool isInvincible()
     {
@@ -148,6 +140,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         if (current_state == State.DEAD) {
             return;
         }
+        is_walking = false;
         health.apply(-dmg);
         transitionToState(doAttackStunnedState(current_state, dir, pow, stun_time));
     }
@@ -156,6 +149,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         {
             return;
         }
+        is_walking = false;
         transitionToState(doKnockBackStunnedState(current_state, dir, pow, hang_time));
     }
     public void spawn(GameObject spawner) {
@@ -168,16 +162,21 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         PatrolBoundary = spawner.transform.parent.GetComponent<AIFlag>();
     }
     void die() {
-        /*if (current_state == State.STUNNED) {
+        if (current_state == State.STUNNED) {
             OverrideGravity = false;
             OverrideVelocityX = true;
         }
-        transitionToState(doDeathState(current_state));*/
+        is_walking = false;
+        transitionToState(doDeathState(current_state));
     }
     void playerDeath()
     {
         health.reset();
         transform.position = respawn_point;
+
+        Anim.Rebind();
+
+        detector.reset();
 
         StopAllCoroutines();
         current_state = State.SLEEPING;
@@ -256,7 +255,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 transitionToState(doManoeuvringState(current_state));
             }
         }
-        else if (current_state == State.STUNNED)
+        else if (current_state == State.STUNNED || current_state == State.KNOCKED_BACK)
         {
             if (was_attacked)
             {
@@ -290,6 +289,22 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             is_on_edge = false;
         }
     }
+    void updateAnimations() {
+        Anim.SetBool("is_walking", is_walking);
+        Anim.SetBool("is_stunned", current_state == State.STUNNED);
+        Anim.SetBool("is_knockedback", current_state == State.KNOCKED_BACK);
+        Anim.speed = (is_walking && current_state == State.MANOEUVRING) ? 0.25f : 1f;
+
+        AimIK.gameObject.SetActive(current_state == State.MANOEUVRING || current_state == State.FIRING);
+        if (AimIK.gameObject.activeSelf) {
+            AimIK.position = Vector2.Lerp(AimIK.position, (Vector2)transform.position + aim.normalized * 10f, 25f * Time.deltaTime);
+        }
+
+        if (current_state == State.DEAD && prev_anim_state != State.DEAD) {
+            Anim.SetTrigger("die");
+        }
+        prev_anim_state = current_state;
+    }
     IEnumerator doIdleState(State prev) {
         current_state = State.IDLE;
 
@@ -306,8 +321,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         is_timer_complete = false;
 
         is_walking = true;
-
-        //anim.SetBool("is_walking", true);
 
         dir = (Random.value <= 0.5f ? -1f : 1f);
         aim = Vector2.right * dir;
@@ -328,7 +341,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         is_timer_complete = false;
 
         float timer = Random.Range(MinFiringPause, MaxFiringPause);
-
+        
         while (true)
         {
             aim = (player.transform.position - transform.position);
@@ -344,8 +357,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             {
                 aim = Quaternion.Euler(0, 0, MaxGunDepression * Facing) * Vector2.right * Facing;
             }
-            Debug.DrawRay(transform.position, aim);
-            AimIK.rotation = Quaternion.LookRotation(Vector3.forward, new Vector3(aim.y, -aim.x, 0) * Facing);
 
             if (!is_on_edge) {
                 if (angle > MaxGunElevation || angle < MaxGunDepression)
@@ -363,10 +374,13 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 is_walking = false;
             }
 
-            timer -= Time.deltaTime;
-            if (timer <= 0)
+            if (detector.IsVisible)
             {
-                is_timer_complete = true;
+                timer -= Time.deltaTime;
+                if (timer <= 0)
+                {
+                    is_timer_complete = true;
+                }
             }
 
             yield return new WaitForFixedUpdate();
@@ -380,7 +394,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
 
         while (bursts_fired < NumShotsInBurst)
         {
-            Instantiate(BulletPrefab, GunBarrel.position, Quaternion.LookRotation(Vector3.forward, aim));
+            Instantiate(BulletPrefab, GunBarrel.position, Quaternion.LookRotation(Vector3.forward, AimIK.position - transform.position));
             bursts_fired++;
 
             yield return new WaitForSeconds(RateOfFire);
@@ -402,7 +416,6 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         
             while (stun_time > 0f)
             {
-                //Velocity = Vector2.Lerp(Velocity, Vector2.zero, Velocity.magnitude * Time.deltaTime);
                 Velocity = dir * pow;
                 pow -= 1200 * Time.deltaTime;
                 if (pow < 0)
@@ -424,11 +437,12 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         else {
             current_state = State.DEAD;
         }
+
         OverrideGravity = false;
         was_attacked = true;
     }
     IEnumerator doKnockBackStunnedState(State prev, Vector2 dir, float pow, float knockback_time) {
-        current_state = State.STUNNED;
+        current_state = State.KNOCKED_BACK;
 
         dir.Normalize();
         dir *= pow;
@@ -443,6 +457,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
             yield return new WaitForFixedUpdate();
             timer += Time.deltaTime;
         }
+
         OverrideVelocityX = true;
         OverrideGravity = false;
         was_attacked = true;
@@ -480,7 +495,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
                 break;
             case State.SLEEPING: Gizmos.color = Color.grey;
                 break;
-            case State.IDLE: Gizmos.color = Color.white;
+            case State.IDLE: Gizmos.color = Color.cyan;
                 break;
         }
 

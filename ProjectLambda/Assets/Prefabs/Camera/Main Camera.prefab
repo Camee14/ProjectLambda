@@ -113,7 +113,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4162675048606550}
   - component: {fileID: 20963578834723166}
-  - component: {fileID: 124039287926992204}
   - component: {fileID: 81855989796447214}
   - component: {fileID: 114243988268545714}
   m_Layer: 0
@@ -143,7 +142,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1790701564531734}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 72.3, y: 33.6, z: -10}
+  m_LocalPosition: {x: 24, y: 46.5, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4423203535604994}
@@ -277,13 +276,6 @@ MonoBehaviour:
   Target: {fileID: 0}
   Threshold: 0.001
   height: -10
---- !u!124 &124039287926992204
-Behaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1790701564531734}
-  m_Enabled: 1
 --- !u!212 &212055600121449396
 SpriteRenderer:
   m_ObjectHideFlags: 1
