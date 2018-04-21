@@ -265,7 +265,6 @@ public class Player : CustomPhysicsObject, IAttackable
         {
             if (InputManager.ActiveDevice.Action1.IsPressed)
             {
-                Debug.Log("doing jump");
                 if (IsGrounded)
                 {
                     Velocity = new Vector2(Velocity.x, JumpForce);

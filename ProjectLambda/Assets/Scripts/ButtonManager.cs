@@ -14,7 +14,6 @@ public class ButtonManager : MonoBehaviour {
     public event MenuDisplayEvent onMenuDisplayChanged;
 
     Canvas canvas;
-    short wait_for_reset;
 
     bool p_state;
 
@@ -54,6 +53,5 @@ public class ButtonManager : MonoBehaviour {
     {
         Time.timeScale = 1;
         canvas.enabled = false;
-        wait_for_reset = 3;
     }
 }
