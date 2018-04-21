@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class ShooterDrone : MonoBehaviour, IAttackable {
     Queen queen;
+
     public void attack(int dmg, Vector2 dir, float pow, float stun_time = 0)
     {
         if (dmg > 0) {

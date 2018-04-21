@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae0543fe805424df99fe08ce744cbe49, type: 3}
+  m_Name: idle
+  m_EditorClassIdentifier: 
+  m_PoseEntries:
+  - path: Bones/body
+    localPosition: {x: -0.19464657, y: -0.19059122, z: 0}
+    localRotation: {x: -0, y: -0, z: 0.4213672, w: 0.90689015}
+    localScale: {x: 1.5257354, y: 1, z: 1}
+  - path: Bones/body/New bone
+    localPosition: {x: 0.79270226, y: -0.00000011920929, z: -5.527657e-10}
+    localRotation: {x: -0.00038952375, y: 0.02538876, z: 0.015335558, w: 0.99956}
+    localScale: {x: 0.21949163, y: 1, z: 1}
+  - path: Bones/body/back tentacle
+    localPosition: {x: -0.09708265, y: 0.2339025, z: 0}
+    localRotation: {x: 0, y: 0, z: 0.9896405, w: 0.14356776}
+    localScale: {x: 0.11531565, y: 0.15359566, z: 1.0382843}
+  - path: Bones/body/back tentacle/New bone
+    localPosition: {x: 0.9505518, y: 0.0014570759, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.12318126, w: 0.9923842}
+    localScale: {x: 1.1953374, y: 0.968, z: 0.968}
+  - path: Bones/body/back tentacle/New bone/New bone
+    localPosition: {x: 1.0000012, y: 0.00000026073187, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.17021598, w: 0.98540676}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/body/back tentacle/New bone/New bone/New bone
+    localPosition: {x: 1.0000013, y: 0.00000028312206, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.19479091, w: 0.9808448}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/body/back tentacle/New bone/New bone/New bone/New bone
+    localPosition: {x: 1.0000021, y: 0.0000012200326, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.19516976, w: 0.9807696}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/body/back tentacle/New bone/New bone/New bone/New bone/New bone
+    localPosition: {x: 1.0010518, y: 0.0010448825, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.22277436, w: 0.9748701}
+    localScale: {x: 1.6231025, y: 1, z: 1}
+  - path: Bones/body/front tentacle
+    localPosition: {x: -0.055937167, y: 0.014743146, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.9640844, w: 0.26559615}
+    localScale: {x: 0.11828722, y: 0.31583259, z: 0.63748896}
+  - path: Bones/body/front tentacle/New bone
+    localPosition: {x: 1.0000006, y: 0.000000023590285, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.13003089, w: 0.99151}
+    localScale: {x: 1.0275943, y: 1, z: 1}
+  - path: Bones/body/front tentacle/New bone/New bone
+    localPosition: {x: 1.0000018, y: 0.00000045076013, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.31763923, w: 0.94821167}
+    localScale: {x: 0.50546426, y: 1, z: 1}
+  - path: Bones/body/front tentacle/New bone/New bone/New bone
+    localPosition: {x: 1, y: 0.000000048428774, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.34660628, w: 0.93801075}
+    localScale: {x: 1, y: 1, z: 1}
+  - path: Bones/body/front tentacle/New bone/New bone/New bone/New bone
+    localPosition: {x: 1.0000018, y: 0.00000081956387, z: 0}
+    localRotation: {x: 0, y: 0, z: -0.43688414, w: 0.8995178}
+    localScale: {x: 1.6572132, y: 1.6572137, z: 1.6572137}

@@ -11,12 +11,15 @@ public class Player : CustomPhysicsObject, IAttackable
     public float JumpForce = 7f;
     public float BasicAttackRate = 3f;
     public float MaxHangTime = 1f;
+    public float MaxDashHoldTime = 3f;
     public float MaxGrappleVelocity = 35;
     public float RespawnY = -250f;
 
     Health health;
     Energy energy;
     public Grapple grapple;
+    public GameObject DashIndicatorPrefab;
+    public GameObject AITriggerPrefab;
 
     public Vector3 respawn_point;
     //made that public so I could make sure the checkpoints were working
@@ -34,13 +37,16 @@ public class Player : CustomPhysicsObject, IAttackable
     ContactFilter2D dash_contact_filter;
     LayerMask enemy_mask;
 
+    SpriteRenderer DashIndicator;
+
     float attack_timer = 0f;
     float hang_timer = 0f;
     float stun_timer = 0f;
+    float dash_timer = 0f;
     short basic_attack_count = 0;
     short attack_charges = 0;
 
-    bool did_grapple_jump = false;
+    //bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
     bool jump_down_on_unpause = false;
@@ -100,6 +106,12 @@ public class Player : CustomPhysicsObject, IAttackable
         respawn_point = transform.position;
 
         grapple.setParent(this);
+
+        GameObject dash = Instantiate(DashIndicatorPrefab);
+        DashIndicator = dash.GetComponent<SpriteRenderer>();
+
+        GameObject ai_trigger = Instantiate(AITriggerPrefab);
+        ai_trigger.GetComponent<ProximityTrigger>().Target = transform;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -137,15 +149,47 @@ public class Player : CustomPhysicsObject, IAttackable
 
         if (detector.longPress(InputControlType.Action3) && energy.hasCharge())
         {
-            setBulletTime(true);
-            OverrideVelocityX = false;
-            if (InputManager.ActiveDevice.Action3.WasReleased)
+            if (dash_timer == 0f)
             {
-                energy.consumeCharges(1);
-                StartCoroutine(doDashAttack(getAimDir()));
-                setBulletTime(false);
+                setBulletTime(true);
+                OverrideVelocityX = false;
             }
 
+            if (dash_timer < MaxDashHoldTime)
+            {
+                Vector2 aim = getAimDir();
+                if (aim.sqrMagnitude != 0)
+                {
+                    DashIndicator.enabled = true;
+                    DashIndicator.transform.rotation = Quaternion.LookRotation(Vector3.forward, aim);
+                    DashIndicator.transform.position = (Vector2)transform.position + aim * 12f;
+                }
+                else
+                {
+                    DashIndicator.enabled = false;
+                }
+            }else {
+                DashIndicator.enabled = false;
+                setBulletTime(false);
+                OverrideVelocityX = true;
+            }
+
+            dash_timer += Time.unscaledDeltaTime;
+
+            if (InputManager.ActiveDevice.Action3.WasReleased)
+            {
+                if (dash_timer < MaxDashHoldTime)
+                {
+                    DashIndicator.enabled = false;
+
+                    energy.consumeCharges(1);
+                    StartCoroutine(doDashAttack(getAimDir()));
+
+                    setBulletTime(false);
+                }
+
+                dash_timer = 0f;
+            }
         }
         else if (detector.shortPress(InputControlType.Action3) && attack_timer <= 0 && basic_attack_count < 4 && basic_attack_enabled) {
             basic_attack_count++;
@@ -194,19 +238,16 @@ public class Player : CustomPhysicsObject, IAttackable
 
         if (InputManager.ActiveDevice.Action2.WasPressed)
         {
-            if (grapple.isGrappleConnected)
-            {
-                grapple.detach();
-            }
-            else
-            {
-                grapple.fire();
-            }
+            grapple.fire();
+        }
+        if (InputManager.ActiveDevice.Action2.WasReleased) {
+            grapple.detach();
+            Velocity = Velocity * 1.15f;
         }
 
         if (OverrideAutoFacing)
         {
-            float dir = transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).x;
+            float dir = Camera.main.ScreenToWorldPoint(Input.mousePosition).x - transform.position.x;
             if (dir >= 0)
             {
                 dir = 1f;
@@ -269,7 +310,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     Velocity = new Vector2(Velocity.x, JumpForce);
                 }
-                else if (grapple.isGrappleConnected)
+                /*else if (grapple.isGrappleConnected)
                 {
                     grapple.detach();
                     releaseTether();
@@ -278,15 +319,16 @@ public class Player : CustomPhysicsObject, IAttackable
                         Velocity = new Vector2(Velocity.x, JumpForce);
                     }
                     did_grapple_jump = true;
-                }
+                }*/
             }
             else if (InputManager.ActiveDevice.Action1.WasReleased)
             {
-                if (did_grapple_jump)
+                /*if (did_grapple_jump)
                 {
                     did_grapple_jump = false;
                 }
-                else if (Velocity.y > 0)
+                else*/
+                if (Velocity.y > 0)
                 {
                     Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
                 }
@@ -358,7 +400,6 @@ public class Player : CustomPhysicsObject, IAttackable
         transform.position = respawn_point;
 
         health.reset();
-        GetComponent<TrailRenderer>().Clear();
 
         if (onPlayerRespawn != null) {
             onPlayerRespawn();
@@ -377,11 +418,11 @@ public class Player : CustomPhysicsObject, IAttackable
         }
     }
     Vector2 getAimDir() {
-        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)transform.InverseTransformPoint(Camera.main.ScreenToWorldPoint(Input.mousePosition)).normalized : InputManager.ActiveDevice.LeftStick.Vector;
+        return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)(Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized : InputManager.ActiveDevice.LeftStick.Vector.normalized;
     }
     void doBasicAttack(Vector2 dir)
     {
-        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (transform.right * 2) * Facing, new Vector2(3f, 3), 0f, enemy_mask);
+        Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + (Vector3.right * 2) * Facing, new Vector2(3f, 3), 0f, enemy_mask);
         if (cols.Length != 0)
         {
             foreach (Collider2D col in cols)
