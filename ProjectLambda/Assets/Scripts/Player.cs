@@ -11,7 +11,7 @@ public class Player : CustomPhysicsObject, IAttackable
     public float JumpForce = 7f;
     public float BasicAttackRate = 3f;
     public float MaxHangTime = 1f;
-
+    public float MaxGrappleVelocity = 35;
     public float RespawnY = -250f;
 
     Health health;
@@ -218,6 +218,10 @@ public class Player : CustomPhysicsObject, IAttackable
             Facing = dir;
         }
 
+        if (grapple.isGrappleConnected) {
+            Velocity = Vector2.ClampMagnitude(Velocity, MaxGrappleVelocity);
+        }
+
         if (transform.position.y < RespawnY) {
             health.instakill();
         }
@@ -300,6 +304,10 @@ public class Player : CustomPhysicsObject, IAttackable
     protected override void onDrawGizmos()
     {
         base.onDrawGizmos();
+
+        if (!DrawDebug) {
+            return;
+        }
 
         float percentage = (attack_timer / BasicAttackRate);
         if (percentage < 0) {
@@ -387,7 +395,7 @@ public class Player : CustomPhysicsObject, IAttackable
                     }
                     if (attack_charges == 3)
                     {
-                        ab.attack(40, (dir + Vector2.up).normalized, 60, BasicAttackRate + MaxHangTime);
+                        ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + MaxHangTime);
                     }
                     else {
                         ab.attack(20, dir, 60f, BasicAttackRate + MaxHangTime);
@@ -483,21 +491,6 @@ public class Player : CustomPhysicsObject, IAttackable
 
         Mass = Mass / multiplier;
         canUseAllControls(true);
-    }
-    /*
-        WIP: function slows down game speed to the value of param floor.
-        better alternative may be to slow down only player and affected entities.
-    */
-    IEnumerator doHitPause(float floor, float rate)
-    {
-        while (Time.timeScale > floor)
-        {
-            Time.timeScale = Mathf.Clamp(Time.timeScale - rate * Time.unscaledDeltaTime, floor, 1f);
-            Time.fixedDeltaTime = 0.02F * Time.timeScale;
-            yield return null;
-        }
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02F * Time.timeScale;
     }
 }
 
