@@ -29,6 +29,8 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     public Transform AimIK;
     public bool DrawAIDebug = false;
 
+    static int SPRITE_INDEX;
+
     IEnumerator current_coroutine;
     State current_state = State.SLEEPING;
     State prev_anim_state = State.SLEEPING;

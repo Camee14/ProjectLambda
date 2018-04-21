@@ -91,8 +91,8 @@ public class Player : CustomPhysicsObject, IAttackable
 
         enemy_mask = LayerMask.GetMask("Enemy");
 
-        dash_contact_filter.useTriggers = false;
-        dash_contact_filter.SetLayerMask(enemy_mask);
+        dash_contact_filter.useTriggers = true;
+        dash_contact_filter.SetLayerMask(LayerMask.GetMask("Enemy", "Projectile"));
         dash_contact_filter.useLayerMask = true;
 
         health.OnHealthDamaged += healthDamaged;
@@ -142,10 +142,10 @@ public class Player : CustomPhysicsObject, IAttackable
             }
         }
 
-        if (!basic_attack_enabled && (IsGrounded || grapple.isGrappleConnected)) {
+       // if (!basic_attack_enabled && (IsGrounded || grapple.isGrappleConnected)) {
            // basic_attack_enabled = true;
            // basic_attack_count = 0;
-        }
+        //}
 
         if (detector.longPress(InputControlType.Action3) && energy.hasCharge())
         {
@@ -466,14 +466,27 @@ public class Player : CustomPhysicsObject, IAttackable
         Collider2D[] cols = new Collider2D[16];
         float timer = 0f;
         while (timer <= 0.14f) {
-            int count = rb2d.OverlapCollider(dash_contact_filter, cols);
+            int count = Physics2D.OverlapCircleNonAlloc(transform.position, 1f, cols, dash_contact_filter.layerMask);
             for (int i = 0; i < count; i++) {
-                IAttackable ab = cols[i].GetComponent(typeof(IAttackable)) as IAttackable;
-                if (ab != null)
+                if (cols[i].tag == "Projectile")
                 {
-                    if (!ab.isStunned())
+                    Bullet b = cols[i].gameObject.GetComponent<Bullet>();
+                    if (b != null)
                     {
-                        ab.knockback(Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
+                        b.changeTarget();
+                        b.rb2d.velocity = dir.normalized * b.rb2d.velocity.magnitude;
+                        b.transform.rotation = Quaternion.LookRotation(Vector3.forward, b.rb2d.velocity);
+                    }
+                }
+                else
+                {
+                    IAttackable ab = cols[i].GetComponent(typeof(IAttackable)) as IAttackable;
+                    if (ab != null)
+                    {
+                        if (!ab.isStunned())
+                        {
+                            ab.knockback(Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
+                        }
                     }
                 }
             }

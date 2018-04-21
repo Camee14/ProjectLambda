@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: 45cd9052f403bb14fa4bd24d2ab38fc1
-timeCreated: 1523551385
+guid: 5dfb238747b3e5b42a0091b9ef18cfdc
+timeCreated: 1524333354
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Bullet_temp_0
-    21300002: Bullet_temp_1
+    21300000: Bullet_temp 1_0
+    21300002: Bullet_temp 1_1
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -48,7 +48,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
-  spritePixelsToUnits: 40
+  spritePixelsToUnits: 64
   alphaUsage: 1
   alphaIsTransparency: 1
   spriteTessellationDetail: -1
@@ -82,7 +82,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Bullet_temp_0
+      name: Bullet_temp 1_0
       rect:
         serializedVersion: 2
         x: 5
@@ -90,21 +90,21 @@ TextureImporter:
         width: 65
         height: 216
       alignment: 9
-      pivot: {x: 0.51565695, y: 0.7968263}
+      pivot: {x: 0.5, y: 0.8}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
     - serializedVersion: 2
-      name: Bullet_temp_1
+      name: Bullet_temp 1_1
       rect:
         serializedVersion: 2
-        x: 96
-        y: 59
+        x: 101
+        y: 39
         width: 65
-        height: 152
+        height: 216
       alignment: 9
-      pivot: {x: 0.5, y: 0.13845208}
+      pivot: {x: 0.5, y: 0.8}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

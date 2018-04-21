@@ -54,6 +54,9 @@ TagManager:
   - name: Walker
     uniqueID: 3592509187
     locked: 0
+  - name: BigBrain
+    uniqueID: 1825178585
+    locked: 0
   - name: Player
     uniqueID: 2269686171
     locked: 0

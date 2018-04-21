@@ -3,14 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour {
+    public Rigidbody2D rb2d;
     public int damage = 20;
+    public Sprite Alternate;
+
+    bool player_is_target = true;
 	void Start () {
-        GetComponent<Rigidbody2D>().AddForce(transform.up * 20, ForceMode2D.Impulse);
+        rb2d.AddForce(transform.up * 20, ForceMode2D.Impulse);
 
         Destroy(gameObject, 5.0f);
 	}
+    public void changeTarget() {
+        player_is_target = false;
+        damage = 50;
+
+        GetComponent<SpriteRenderer>().sprite = Alternate;
+    }
     void OnTriggerEnter2D(Collider2D col)
     {
+        if ((col.tag == "Player" && !player_is_target) || (col.tag == "Enemy" && player_is_target)) {
+            return;
+        }
         IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
         if (ab != null) {
             if (ab.isInvincible()) {
