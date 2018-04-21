@@ -1412,7 +1412,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxHealth: 100
   Invincibility: 0
-  current_health: 0
 --- !u!114 &114972087558644206
 MonoBehaviour:
   m_ObjectHideFlags: 1

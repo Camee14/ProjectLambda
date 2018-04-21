@@ -200,7 +200,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EnergyCharges: 3
   BaseRechargeRate: 5
-  InfiniteCharges: 1
+  InfiniteCharges: 0
 --- !u!114 &114861918270975176
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -242,7 +242,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxHealth: 100
-  Invincibility: 1
+  Invincibility: 0
 --- !u!120 &120801903166874640
 LineRenderer:
   m_ObjectHideFlags: 1
