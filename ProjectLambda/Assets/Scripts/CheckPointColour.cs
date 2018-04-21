@@ -18,7 +18,7 @@ public class CheckPointColour : MonoBehaviour {
         if (other.tag == "Player")
         {
             hasReachedCheckpoint = true;
-            checkPointRenderer.color = new Color(0, 255, 0);
+            checkPointRenderer.color = new Color(0, 204, 204);
         }
     }
 }
