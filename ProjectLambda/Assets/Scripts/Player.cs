@@ -54,6 +54,14 @@ public class Player : CustomPhysicsObject, IAttackable
     bool basic_attack_enabled = true;
     bool is_paused = false;
 
+    private AudioSource soundEffect;
+    public AudioClip SwordSlashSound;
+    public AudioClip JumpSound;
+    public AudioClip SwordDashSound;
+    public AudioClip GrappleFireSound;
+    public AudioClip GroundSlamSound;
+    public AudioClip NoImpactSwingSound;
+
     public void attack(int dmg, Vector2 dir, float pow, float stun_time) {
         if (grapple.isGrappleConnected) {
             grapple.detach();
@@ -112,6 +120,8 @@ public class Player : CustomPhysicsObject, IAttackable
 
         GameObject ai_trigger = Instantiate(AITriggerPrefab);
         ai_trigger.GetComponent<ProximityTrigger>().Target = transform;
+
+        soundEffect = GetComponent<AudioSource>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -239,6 +249,8 @@ public class Player : CustomPhysicsObject, IAttackable
         if (InputManager.ActiveDevice.Action2.WasPressed)
         {
             grapple.fire();
+            if (grapple.isGrappleConnected == true)
+                soundEffect.PlayOneShot(GrappleFireSound, 0.5f);
         }
         if (InputManager.ActiveDevice.Action2.WasReleased) {
             grapple.detach();
@@ -428,9 +440,11 @@ public class Player : CustomPhysicsObject, IAttackable
                     if (attack_charges == 3)
                     {
                         ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + MaxHangTime);
+                        soundEffect.PlayOneShot(SwordSlashSound, 0.2f);
                     }
                     else {
                         ab.attack(20, dir, 60f, BasicAttackRate + MaxHangTime);
+                        soundEffect.PlayOneShot(SwordSlashSound, 0.2f);
                     }
                 }
             }
@@ -464,6 +478,8 @@ public class Player : CustomPhysicsObject, IAttackable
         health.setInvincible(true);
         Velocity = dir.normalized * 80f;
 
+        soundEffect.PlayOneShot(SwordDashSound, 0.5f);
+
         Collider2D[] cols = new Collider2D[16];
         float timer = 0f;
         while (timer <= 0.14f) {
@@ -493,6 +509,7 @@ public class Player : CustomPhysicsObject, IAttackable
         Mass *= multiplier;
         canUseAllControls(false);
 
+
         while (!IsGrounded && !interupt_action)
         {
             Collider2D[] cols = new Collider2D[16];
@@ -514,6 +531,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
                     ab.knockback(Vector2.up, 20f * mag, 1f);
+                    soundEffect.PlayOneShot(GroundSlamSound, 0.8f);
                 }
             }
         }

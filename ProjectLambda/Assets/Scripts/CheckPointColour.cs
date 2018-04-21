@@ -6,6 +6,7 @@ public class CheckPointColour : MonoBehaviour {
 
     public bool hasReachedCheckpoint;
     private SpriteRenderer checkPointRenderer;
+    public Sprite CheckpointActivated;
 
     // Use this for initialization
     void Start()
@@ -18,7 +19,8 @@ public class CheckPointColour : MonoBehaviour {
         if (other.tag == "Player")
         {
             hasReachedCheckpoint = true;
-            checkPointRenderer.color = new Color(0, 204, 204);
+            checkPointRenderer.sprite = CheckpointActivated;
+            //checkPointRenderer.color = new Color(0, 204, 204);
         }
     }
 }
