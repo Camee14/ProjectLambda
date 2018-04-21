@@ -39,6 +39,31 @@ public class KeyboardMouse : UnityInputDeviceProfile {
                 Target = InputControlType.Action4,
                 Source = KeyCodeButton(KeyCode.F)
             },
+            new InputControlMapping{
+                Handle = "Escape",
+                Target = InputControlType.Menu,
+                Source = KeyCodeButton(KeyCode.Escape)
+            },
+            new InputControlMapping{
+                Handle = "Up",
+                Target = InputControlType.DPadUp,
+                Source = KeyCodeButton(KeyCode.UpArrow)
+            },
+            new InputControlMapping{
+                Handle = "Down",
+                Target = InputControlType.DPadDown,
+                Source = KeyCodeButton(KeyCode.DownArrow)
+            },
+            new InputControlMapping{
+                Handle = "Enter",
+                Target = InputControlType.Button0,
+                Source = KeyCodeButton(KeyCode.Return)
+            },
+            new InputControlMapping{
+                Handle = "Back",
+                Target = InputControlType.Button1,
+                Source = KeyCodeButton(KeyCode.Backspace)
+            }
         };
 
         AnalogMappings = new[] {

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using InControl;
 
 public class Player : CustomPhysicsObject, IAttackable
@@ -25,9 +26,11 @@ public class Player : CustomPhysicsObject, IAttackable
 
     public delegate void PlayerDeathEvent();
     public delegate void PlayerRespawnChangedEvent();
+    public delegate void PlayerRespawnEvent();
 
     public event PlayerDeathEvent onPlayerDeath;
     public event PlayerRespawnChangedEvent onPlayerRespawnChanged;
+    public event PlayerRespawnChangedEvent onPlayerRespawn;
 
     LongButtonPressDetector detector;
 
@@ -46,8 +49,10 @@ public class Player : CustomPhysicsObject, IAttackable
     //bool did_grapple_jump = false;
     bool movement_enabled = true;
     bool jump_enabled = true;
+    bool jump_down_on_unpause = false;
     bool interupt_action = false;
     bool basic_attack_enabled = true;
+    bool is_paused = false;
 
     public void attack(int dmg, Vector2 dir, float pow, float stun_time) {
         if (grapple.isGrappleConnected) {
@@ -94,6 +99,8 @@ public class Player : CustomPhysicsObject, IAttackable
         health.OnHealthDamaged += healthDamaged;
         health.OnCharacterDeath += die;
 
+        GameObject.FindGameObjectWithTag("Menu").GetComponent<ButtonManager>().onMenuDisplayChanged += onMenuDisplayChanged;
+
         InputManager.OnActiveDeviceChanged += onActiveDeviceChanged;
 
         respawn_point = transform.position;
@@ -121,6 +128,11 @@ public class Player : CustomPhysicsObject, IAttackable
 
     protected override void update()
     {
+        if (is_paused)
+        {
+            return;
+        }
+
         base.update();
 
         if (stun_timer > 0) {
@@ -261,6 +273,11 @@ public class Player : CustomPhysicsObject, IAttackable
     }
     protected override void fixedUpdate()
     {
+        if (is_paused)
+        {
+            return;
+        }
+
         base.fixedUpdate();
 
         if (grapple.isGrappleConnected)
@@ -276,6 +293,10 @@ public class Player : CustomPhysicsObject, IAttackable
     protected override Vector2 setInputAcceleration()
     {
         Vector2 move = Vector2.zero;
+        if (is_paused)
+        {
+            return move;
+        }
 
         if (movement_enabled)
         {
@@ -311,6 +332,12 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
                 }
+            }
+        }
+        else {
+            if (jump_down_on_unpause && InputManager.ActiveDevice.Action1.WasReleased) {
+                jump_enabled = true;
+                jump_down_on_unpause = false;
             }
         }
         return move * MovementSpeed;
@@ -373,9 +400,22 @@ public class Player : CustomPhysicsObject, IAttackable
         transform.position = respawn_point;
 
         health.reset();
+
+        if (onPlayerRespawn != null) {
+            onPlayerRespawn();
+        }
     }
     void onActiveDeviceChanged(InputDevice active) {
         OverrideAutoFacing = (active.Name == "Keyboard & Mouse");
+    }
+    void onMenuDisplayChanged(bool enabled) {
+        is_paused = enabled;
+        if (!is_paused) {
+            if (InputManager.ActiveDevice.Action1.IsPressed) {
+                jump_down_on_unpause = true;
+                jump_enabled = false;
+            }
+        }
     }
     Vector2 getAimDir() {
         return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)(Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized : InputManager.ActiveDevice.LeftStick.Vector.normalized;

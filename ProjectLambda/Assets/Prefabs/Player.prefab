@@ -25,6 +25,7 @@ GameObject:
   - component: {fileID: 114861918270975176}
   - component: {fileID: 114968467724419896}
   - component: {fileID: 114772282500575062}
+  - component: {fileID: 114444402674873626}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -226,7 +227,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxHealth: 100
   Invincibility: 0
-  current_health: 100
 --- !u!120 &120801903166874640
 LineRenderer:
   m_ObjectHideFlags: 1
