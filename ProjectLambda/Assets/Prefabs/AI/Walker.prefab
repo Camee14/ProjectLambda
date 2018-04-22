@@ -1122,7 +1122,7 @@ MonoBehaviour:
   AimIK: {fileID: 4948589993379306}
   DrawAIDebug: 0
   GunSound: {fileID: 8300000, guid: 9c8e560e15c857940982633562a50055, type: 3}
-  DestroyedSound: {fileID: 0}
+  DestroyedSound: {fileID: 8300000, guid: 4a9bf3b49cd9ff4428dd2f49f49dd3a9, type: 3}
 --- !u!114 &114264598940278224
 MonoBehaviour:
   m_ObjectHideFlags: 1

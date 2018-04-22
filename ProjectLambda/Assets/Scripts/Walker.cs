@@ -180,6 +180,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         }
         is_walking = false;
         transitionToState(doDeathState(current_state));
+        PlaySoundEffect(DestroyedSound, 4f);
     }
     void playerDeath()
     {
