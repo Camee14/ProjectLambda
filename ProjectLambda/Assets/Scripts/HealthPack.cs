@@ -6,6 +6,7 @@ public class HealthPack : MonoBehaviour {
 
     static Player p;
 
+    public GameObject Light;
     public GameObject HealthOrb;
     public int NumOrbsToSpawn = 4;
 
@@ -36,6 +37,7 @@ public class HealthPack : MonoBehaviour {
     }
     void setEnabled(bool state) {
         sprite.enabled = state;
+        Light.SetActive(state);
         box.enabled = state;
     }
     void reset() {
