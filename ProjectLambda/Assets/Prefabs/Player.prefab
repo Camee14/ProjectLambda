@@ -364,6 +364,8 @@ MonoBehaviour:
   JumpSound: {fileID: 8300000, guid: ec93094cfbd36d7409e098d7e09e9d03, type: 3}
   SwordDashSound: {fileID: 8300000, guid: 8448e1af86cfcee42accb2bb45131540, type: 3}
   GrappleFireSound: {fileID: 8300000, guid: 671bd622850a1fa4e9b5f18d936ea6d9, type: 3}
+  GroundSlamSound: {fileID: 8300000, guid: e1015f0329b731a4bb97431ce9bba175, type: 3}
+  NoImpactSwingSound: {fileID: 0}
 --- !u!114 &114968467724419896
 MonoBehaviour:
   m_ObjectHideFlags: 1

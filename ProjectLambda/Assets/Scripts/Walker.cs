@@ -62,6 +62,10 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
     Vector2 aim;
     Vector2 respawn_point;
 
+    private AudioSource soundEffect;
+    public AudioClip GunSound;
+    public AudioClip DestroyedSound;
+
     protected override void awake()
     {
         base.awake();
@@ -88,7 +92,15 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         aim = Vector2.right * Facing;
 
         transitionToState(doIdleState(current_state));
+
+        soundEffect = GetComponent<AudioSource>();
     }
+    private void PlaySoundEffect(AudioClip sound, float volume)
+    {
+        soundEffect.Stop();
+        soundEffect.PlayOneShot(sound, volume);
+    }
+
     protected override void update()
     {
         base.update();
@@ -168,6 +180,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         }
         is_walking = false;
         transitionToState(doDeathState(current_state));
+        PlaySoundEffect(DestroyedSound, 4f);
     }
     void playerDeath()
     {
@@ -396,7 +409,7 @@ public class Walker : CustomPhysicsObject, IAttackable, ISpawnable {
         {
             Instantiate(BulletPrefab, GunBarrel.position, Quaternion.LookRotation(Vector3.forward, AimIK.position - transform.position));
             bursts_fired++;
-
+            PlaySoundEffect(GunSound, 3f);
             yield return new WaitForSeconds(RateOfFire);
         }
         is_timer_complete = true;
