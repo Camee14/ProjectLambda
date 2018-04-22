@@ -86,7 +86,6 @@ GameObject:
   - component: {fileID: 4258872707620942}
   - component: {fileID: 114498078203917856}
   - component: {fileID: 95388218360721484}
-  - component: {fileID: 114727172077251654}
   m_Layer: 0
   m_Name: Big Brain
   m_TagString: Untagged
