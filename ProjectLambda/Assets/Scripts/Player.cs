@@ -53,6 +53,14 @@ public class Player : CustomPhysicsObject, IAttackable
     bool basic_attack_enabled = true;
     bool is_paused = false;
 
+    private AudioSource soundEffect;
+    public AudioClip SwordSlashSound;
+    public AudioClip JumpSound;
+    public AudioClip SwordDashSound;
+    public AudioClip GrappleFireSound;
+    public AudioClip GroundSlamSound;
+    public AudioClip NoImpactSwingSound;
+
     public void attack(int dmg, Vector2 dir, float pow, float stun_time) {
         if (grapple.isGrappleConnected) {
             grapple.detach();
@@ -111,6 +119,8 @@ public class Player : CustomPhysicsObject, IAttackable
 
         GameObject ai_trigger = Instantiate(AITriggerPrefab);
         ai_trigger.GetComponent<ProximityTrigger>().Target = transform;
+
+        soundEffect = GetComponent<AudioSource>();
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -123,6 +133,12 @@ public class Player : CustomPhysicsObject, IAttackable
                 onPlayerRespawnChanged();
             }
         }
+    }
+
+    public void PlaySoundEffect(AudioClip sound, float volume)
+    {
+        soundEffect.Stop();
+        soundEffect.PlayOneShot(sound, volume);
     }
 
     protected override void update()
@@ -243,6 +259,8 @@ public class Player : CustomPhysicsObject, IAttackable
         if (InputManager.ActiveDevice.Action2.WasPressed)
         {
             grapple.fire();
+            if (grapple.isGrappleConnected == true)
+                PlaySoundEffect(GrappleFireSound, 0.5f);
         }
         if (InputManager.ActiveDevice.Action2.WasReleased) {
             grapple.detach();
@@ -417,16 +435,18 @@ public class Player : CustomPhysicsObject, IAttackable
                 IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
                 if (ab != null)
                 {
+                    PlaySoundEffect(SwordSlashSound, 0.3f);
                     if (dir == Vector2.zero) {
                         dir = Vector2.right * Facing;
                     }
                     if (special)
                     {
                         ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + ComboWindowDuration);
+                        //PlaySoundEffect(SwordSlashSound, 0.5f);
                     }
-                    else
-                    {
+                    else {
                         ab.attack(20, dir, 60f, BasicAttackRate + ComboWindowDuration);
+                        //PlaySoundEffect(SwordSlashSound, 0.5f);
                     }
                 }
             }
@@ -462,6 +482,8 @@ public class Player : CustomPhysicsObject, IAttackable
         OverrideGravity = true;
         health.setInvincible(true);
         Velocity = dir.normalized * 80f;
+
+        PlaySoundEffect(SwordDashSound, 0.5f);
 
         Collider2D[] cols = new Collider2D[16];
         float timer = 0f;
@@ -505,6 +527,7 @@ public class Player : CustomPhysicsObject, IAttackable
         Mass *= multiplier;
         canUseAllControls(false);
 
+
         while (!IsGrounded && !interupt_action)
         {
             Collider2D[] cols = new Collider2D[16];
@@ -526,6 +549,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
                     ab.knockback(Vector2.up, 20f * mag, 1f);
+                    PlaySoundEffect(GroundSlamSound, 0.8f);
                 }
             }
         }

@@ -86,7 +86,6 @@ GameObject:
   - component: {fileID: 4258872707620942}
   - component: {fileID: 114498078203917856}
   - component: {fileID: 95388218360721484}
-  - component: {fileID: 114727172077251654}
   m_Layer: 0
   m_Name: Big Brain
   m_TagString: Untagged
@@ -224,6 +223,7 @@ GameObject:
   - component: {fileID: 114658640747493086}
   - component: {fileID: 114897012865922808}
   - component: {fileID: 114165465896450864}
+  - component: {fileID: 82153281556190200}
   m_Layer: 11
   m_Name: Queen
   m_TagString: Untagged
@@ -831,6 +831,86 @@ CircleCollider2D:
   m_Offset: {x: 0.33069658, y: 0.21422291}
   serializedVersion: 2
   m_Radius: 0.713325
+--- !u!82 &82153281556190200
+AudioSource:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1718609691138620}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
 --- !u!95 &95388218360721484
 Animator:
   serializedVersion: 3
@@ -1230,17 +1310,10 @@ MonoBehaviour:
   BulletPrefab: {fileID: 1051425351904454, guid: 9433c686552714941af08393443f5e45,
     type: 2}
   DrawAIDebug: 0
---- !u!114 &114727172077251654
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1403971097783366}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fa5188db55c28c4888411d87dbf2db6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  IdleSound: {fileID: 8300000, guid: 0bab3e2512a87dc4d8a3bb29a9d56a9b, type: 3}
+  ShieldBreakSound: {fileID: 8300000, guid: 033f2d8b437c6d34193bf5c72933edb5, type: 3}
+  ShieldHitSound: {fileID: 8300000, guid: b2d8c182bcc3f2f489d71399779c744c, type: 3}
+  GunSound: {fileID: 8300000, guid: 9c8e560e15c857940982633562a50055, type: 3}
 --- !u!114 &114814045719428730
 MonoBehaviour:
   m_ObjectHideFlags: 1

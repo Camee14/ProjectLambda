@@ -59,6 +59,12 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     bool do_spin = true;
     bool reset_spawn_timer = false;
 
+    private AudioSource soundEffect;
+    public AudioClip IdleSound;
+    public AudioClip ShieldBreakSound;
+    public AudioClip ShieldHitSound;
+    public AudioClip GunSound;
+
     public void attack(int dmg, Vector2 dir, float pow, float stun_time = 0)
     {
         if (current_state == State.DEAD || shield.isActive)
@@ -98,6 +104,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
 
         if (active_children.Count == 0) {
             shield.setActive(false);
+            PlaySoundEffect(ShieldBreakSound, 3f);
         }
         reset_spawn_timer = true;
     }
@@ -124,6 +131,14 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
         children = transform.GetChild(0);
         active_children = new List<Transform>();
         rotations = new List<float>();
+
+        soundEffect = GetComponent<AudioSource>();
+    }
+
+    public void PlaySoundEffect(AudioClip sound, float volume)
+    {
+        soundEffect.Stop();
+        soundEffect.PlayOneShot(sound, volume);
     }
     void FixedUpdate() {
         if (!detector.IsSwitchedOn)
@@ -234,6 +249,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
     {
         if (current_state == State.IDLE)
         {
+            PlaySoundEffect(IdleSound, 6f);
             if (in_combat)
             {
                 if (active_children.Count == 0)
@@ -390,6 +406,7 @@ public class Queen : MonoBehaviour, IAttackable, ISpawnable
                             {
                                 Instantiate(BulletPrefab, child.position, Quaternion.LookRotation(Vector3.forward, (player.transform.position - child.position)));
                                 shoot_delay = 0.4f;
+                                PlaySoundEffect(GunSound, 3f);
                             }
                         }
                     }

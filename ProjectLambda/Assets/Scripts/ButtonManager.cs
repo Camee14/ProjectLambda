@@ -62,7 +62,7 @@ public class ButtonManager : MonoBehaviour {
     }
     public void showEndOfLevelUI() {
         can_pause = false;
-        EndOfLevel.enabled = true;
+        EndOfLevel.gameObject.SetActive(true);
 
         if (onMenuDisplayChanged != null)
         {

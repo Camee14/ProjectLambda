@@ -26,6 +26,7 @@ public class Grapple : MonoBehaviour {
     Vector2 grapple_target_point;
     Vector2 man_aim_dir;
 
+
     float current_wire_length = 9f;
     bool grapple_connected = false;
 
