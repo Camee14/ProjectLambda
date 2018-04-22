@@ -136,6 +136,12 @@ public class Player : CustomPhysicsObject, IAttackable
         }
     }
 
+    public void PlaySoundEffect(AudioClip sound, float volume)
+    {
+        soundEffect.Stop();
+        soundEffect.PlayOneShot(sound, volume);
+    }
+
     protected override void update()
     {
         if (is_paused)
@@ -250,7 +256,7 @@ public class Player : CustomPhysicsObject, IAttackable
         {
             grapple.fire();
             if (grapple.isGrappleConnected == true)
-                soundEffect.PlayOneShot(GrappleFireSound, 0.5f);
+                PlaySoundEffect(GrappleFireSound, 0.5f);
         }
         if (InputManager.ActiveDevice.Action2.WasReleased) {
             grapple.detach();
@@ -434,17 +440,18 @@ public class Player : CustomPhysicsObject, IAttackable
                 IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
                 if (ab != null)
                 {
+                    PlaySoundEffect(SwordSlashSound, 0.3f);
                     if (dir == Vector2.zero) {
                         dir = Vector2.right * Facing;
                     }
                     if (attack_charges == 3)
                     {
                         ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + MaxHangTime);
-                        soundEffect.PlayOneShot(SwordSlashSound, 0.2f);
+                        //PlaySoundEffect(SwordSlashSound, 0.5f);
                     }
                     else {
                         ab.attack(20, dir, 60f, BasicAttackRate + MaxHangTime);
-                        soundEffect.PlayOneShot(SwordSlashSound, 0.2f);
+                        //PlaySoundEffect(SwordSlashSound, 0.5f);
                     }
                 }
             }
@@ -478,7 +485,7 @@ public class Player : CustomPhysicsObject, IAttackable
         health.setInvincible(true);
         Velocity = dir.normalized * 80f;
 
-        soundEffect.PlayOneShot(SwordDashSound, 0.5f);
+        PlaySoundEffect(SwordDashSound, 0.5f);
 
         Collider2D[] cols = new Collider2D[16];
         float timer = 0f;
@@ -531,7 +538,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     float mag = 1f - ((col.transform.position - transform.position).magnitude / 10f);
                     ab.knockback(Vector2.up, 20f * mag, 1f);
-                    soundEffect.PlayOneShot(GroundSlamSound, 0.8f);
+                    PlaySoundEffect(GroundSlamSound, 0.8f);
                 }
             }
         }
