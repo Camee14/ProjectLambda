@@ -50,6 +50,9 @@ public class playerHUD : MonoBehaviour {
     void reset() {
         healthUpdate(health.MaxHealth, health.MaxHealth);
         maxEnergyChanged(0, energy.EnergyCharges);
+        for (int i = 0; i < EnergyBar.Length; i++) {
+            energyUpdate(i, 0);
+        }
         StartCoroutine(doEnergyStart());
     }
     IEnumerator doHealthUpdate() {

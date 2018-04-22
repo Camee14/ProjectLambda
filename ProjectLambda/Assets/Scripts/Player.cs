@@ -10,7 +10,7 @@ public class Player : CustomPhysicsObject, IAttackable
     public float MovementSpeed = 7f;
     public float JumpForce = 7f;
     public float BasicAttackRate = 3f;
-    public float MaxHangTime = 1f;
+    public float ComboWindowDuration = 0.2f;
     public float MaxDashHoldTime = 3f;
     public float MaxGrappleVelocity = 35;
     public float RespawnY = -250f;
@@ -22,8 +22,7 @@ public class Player : CustomPhysicsObject, IAttackable
     public GameObject DashIndicatorPrefab;
     public GameObject AITriggerPrefab;
 
-    public Vector3 respawn_point;
-    //made that public so I could make sure the checkpoints were working
+    Vector3 respawn_point;
 
     public delegate void PlayerDeathEvent();
     public delegate void PlayerRespawnChangedEvent();
@@ -41,7 +40,7 @@ public class Player : CustomPhysicsObject, IAttackable
     SpriteRenderer DashIndicator;
 
     float attack_timer = 0f;
-    float hang_timer = 0f;
+    float combo_timer = 0f;
     float stun_timer = 0f;
     float dash_timer = 0f;
     short basic_attack_count = 0;
@@ -100,8 +99,8 @@ public class Player : CustomPhysicsObject, IAttackable
 
         enemy_mask = LayerMask.GetMask("Enemy");
 
-        dash_contact_filter.useTriggers = false;
-        dash_contact_filter.SetLayerMask(enemy_mask);
+        dash_contact_filter.useTriggers = true;
+        dash_contact_filter.SetLayerMask(LayerMask.GetMask("Enemy", "Projectile"));
         dash_contact_filter.useLayerMask = true;
 
         health.OnHealthDamaged += healthDamaged;
@@ -159,9 +158,10 @@ public class Player : CustomPhysicsObject, IAttackable
             }
         }
 
-        if (!basic_attack_enabled && (IsGrounded || grapple.isGrappleConnected)) {
-            basic_attack_enabled = true;
-        }
+       // if (!basic_attack_enabled && (IsGrounded || grapple.isGrappleConnected)) {
+           // basic_attack_enabled = true;
+           // basic_attack_count = 0;
+        //}
 
         if (detector.longPress(InputControlType.Action3) && energy.hasCharge())
         {
@@ -207,43 +207,47 @@ public class Player : CustomPhysicsObject, IAttackable
                 dash_timer = 0f;
             }
         }
-        else if (detector.shortPress(InputControlType.Action3) && attack_timer <= 0 && basic_attack_count < 4 && basic_attack_enabled) {
-            basic_attack_count++;
 
-            if (hang_timer > 0 && hang_timer - (MaxHangTime * 0.75) <= 0)
+        if (detector.shortPress(InputControlType.Action3) && attack_timer <= 0 && basic_attack_enabled)
+        {
+            bool special_attack = false;
+
+            basic_attack_count++;
+            if (basic_attack_count == 3)
             {
-                attack_charges++;
+                basic_attack_enabled = false;
+            }
+
+            if (attack_charges == 2)
+            {
+                attack_charges = 0;
+                special_attack = true;
             }
 
             attack_timer = BasicAttackRate;
-            hang_timer = BasicAttackRate + MaxHangTime;
-
-            interupt_action = false;
+            combo_timer = BasicAttackRate + ComboWindowDuration;
 
             Vector2 dir = getAimDir();
             StartCoroutine(doHangTime(dir));
-            doBasicAttack(dir);
+            doBasicAttack(dir, special_attack);
         }
-
-        if (attack_timer > 0) {
+        
+        if (combo_timer > 0)
+        {
+            combo_timer -= Time.deltaTime;
             attack_timer -= Time.deltaTime;
-        }
-        if (hang_timer > 0) {
-            hang_timer -= Time.deltaTime;
-            if (InputManager.ActiveDevice.Action1.WasPressed) {
-                hang_timer = 0f;
+            if (InputManager.ActiveDevice.Action1.WasPressed)
+            {
+                attack_timer = 0f;
             }
-            if (hang_timer <= 0) {
-                if (basic_attack_count == 4)
-                {
-                    basic_attack_enabled = false;
-                }
-                interupt_action = true;
+        }
+        else {
+            basic_attack_enabled = true;
+            basic_attack_count = 0;
 
-                basic_attack_count = 0;
-                attack_charges = 0;
-            }
+            attack_charges = 0;
         }
+
         if (InputManager.ActiveDevice.Action4.WasPressed && !IsGrounded && energy.consumeCharges(1)) {
             interupt_action = false;
             StartCoroutine(doGroundSlam());
@@ -265,16 +269,15 @@ public class Player : CustomPhysicsObject, IAttackable
 
         if (OverrideAutoFacing)
         {
-            float dir = Camera.main.ScreenToWorldPoint(Input.mousePosition).x - transform.position.x;
-            if (dir >= 0)
+            float dir = getAimDir().x;
+            if (dir > 0)
             {
-                dir = 1f;
+                Facing = 1;
             }
-            else
+            else if(dir < 0)
             {
-                dir = -1f;
+                Facing = -1;
             }
-            Facing = dir;
         }
 
         if (grapple.isGrappleConnected) {
@@ -328,24 +331,9 @@ public class Player : CustomPhysicsObject, IAttackable
                 {
                     Velocity = new Vector2(Velocity.x, JumpForce);
                 }
-                /*else if (grapple.isGrappleConnected)
-                {
-                    grapple.detach();
-                    releaseTether();
-                    if (Velocity.magnitude <= 1f)
-                    {
-                        Velocity = new Vector2(Velocity.x, JumpForce);
-                    }
-                    did_grapple_jump = true;
-                }*/
             }
             else if (InputManager.ActiveDevice.Action1.WasReleased)
             {
-                /*if (did_grapple_jump)
-                {
-                    did_grapple_jump = false;
-                }
-                else*/
                 if (Velocity.y > 0)
                 {
                     Velocity = new Vector2(Velocity.x, Velocity.y * 0.5f);
@@ -399,6 +387,11 @@ public class Player : CustomPhysicsObject, IAttackable
         }
 
         stun_timer = 0f;
+        combo_timer = 0f;
+        attack_timer = 0;
+        attack_charges = 0;
+        basic_attack_count = 0;
+        StopAllCoroutines();
         Velocity = Vector2.zero;
 
         GameObject[] projectiles = GameObject.FindGameObjectsWithTag("Projectile");
@@ -409,6 +402,7 @@ public class Player : CustomPhysicsObject, IAttackable
         transform.position = respawn_point;
 
         health.reset();
+        energy.reset();
 
         if (onPlayerRespawn != null) {
             onPlayerRespawn();
@@ -429,12 +423,13 @@ public class Player : CustomPhysicsObject, IAttackable
     Vector2 getAimDir() {
         return InputManager.ActiveDevice.Name == "Keyboard & Mouse" ? (Vector2)(Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position).normalized : InputManager.ActiveDevice.LeftStick.Vector.normalized;
     }
-    void doBasicAttack(Vector2 dir)
+    void doBasicAttack(Vector2 dir, bool special)
     {
         SwordEffectAnim.Play("SwordSlashDown", 0);
         Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + new Vector3(Facing * 1.5f, 0.5f), new Vector2(2f, 2f), 0f, enemy_mask);
         if (cols.Length != 0)
         {
+            attack_charges++;
             foreach (Collider2D col in cols)
             {
                 IAttackable ab = col.GetComponent(typeof(IAttackable)) as IAttackable;
@@ -444,13 +439,13 @@ public class Player : CustomPhysicsObject, IAttackable
                     if (dir == Vector2.zero) {
                         dir = Vector2.right * Facing;
                     }
-                    if (attack_charges == 3)
+                    if (special)
                     {
-                        ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + MaxHangTime);
+                        ab.attack(40, (dir + Vector2.up).normalized, 60f, BasicAttackRate + ComboWindowDuration);
                         //PlaySoundEffect(SwordSlashSound, 0.5f);
                     }
                     else {
-                        ab.attack(20, dir, 60f, BasicAttackRate + MaxHangTime);
+                        ab.attack(20, dir, 60f, BasicAttackRate + ComboWindowDuration);
                         //PlaySoundEffect(SwordSlashSound, 0.5f);
                     }
                 }
@@ -461,23 +456,26 @@ public class Player : CustomPhysicsObject, IAttackable
 
         OverrideGravity = true;
         OverrideVelocityX = false;
+        OverrideAutoFacing = true;
         canUseAllControls(false);
 
         dir.y = 0f;
 
         float speed = 60f;
-        while (!interupt_action)
+        while (combo_timer > 0)
         {
             Velocity = dir.normalized * speed;
             speed -= 1200 * Time.deltaTime;
             if (speed < 0) {
                 speed = 0;
             }
+
             yield return new WaitForFixedUpdate();
         }
 
         OverrideGravity = false;
         OverrideVelocityX = true;
+        OverrideAutoFacing = false;
         canUseAllControls(true);
     }
     IEnumerator doDashAttack(Vector2 dir) {
@@ -490,14 +488,27 @@ public class Player : CustomPhysicsObject, IAttackable
         Collider2D[] cols = new Collider2D[16];
         float timer = 0f;
         while (timer <= 0.14f) {
-            int count = rb2d.OverlapCollider(dash_contact_filter, cols);
+            int count = Physics2D.OverlapCircleNonAlloc(transform.position, 1f, cols, dash_contact_filter.layerMask);
             for (int i = 0; i < count; i++) {
-                IAttackable ab = cols[i].GetComponent(typeof(IAttackable)) as IAttackable;
-                if (ab != null)
+                if (cols[i].tag == "Projectile")
                 {
-                    if (!ab.isStunned())
+                    Bullet b = cols[i].gameObject.GetComponent<Bullet>();
+                    if (b != null)
                     {
-                        ab.knockback(Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
+                        b.changeTarget();
+                        b.rb2d.velocity = dir.normalized * b.rb2d.velocity.magnitude;
+                        b.transform.rotation = Quaternion.LookRotation(Vector3.forward, b.rb2d.velocity);
+                    }
+                }
+                else
+                {
+                    IAttackable ab = cols[i].GetComponent(typeof(IAttackable)) as IAttackable;
+                    if (ab != null)
+                    {
+                        if (!ab.isStunned())
+                        {
+                            ab.knockback(Vector2.up + ((Vector2.right * Facing) * 0.5f), 18f, 1f);
+                        }
                     }
                 }
             }

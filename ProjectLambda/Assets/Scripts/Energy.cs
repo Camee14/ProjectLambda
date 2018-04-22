@@ -25,6 +25,14 @@ public class Energy : MonoBehaviour {
         }
         full_charges = 3;
 	}
+    public void reset() {
+        charges.Clear();
+        for (int i = 0; i < EnergyCharges; i++)
+        {
+            charges.Add(100);
+        }
+        full_charges = 3;
+    }
     public bool hasCharge() {
         return full_charges > 0 || InfiniteCharges;
     }

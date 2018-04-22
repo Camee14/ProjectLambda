@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ParalaxLayer : MonoBehaviour {
+public class ParallaxLayer : MonoBehaviour {
     public SpriteRenderer[] Images;
     public float Speed;
     int left_index, center_index, right_index;
@@ -12,10 +12,10 @@ public class ParalaxLayer : MonoBehaviour {
         center_index = 1;
         right_index = 2;
 
-        p_camera_center = Camera.main.transform.position;
-        p_camera_center.z = 0;
-
-        transform.position = p_camera_center;
+        transform.position = new Vector3(Camera.main.transform.position.x, transform.position.y, transform.position.z);
+        p_camera_center = transform.position;
+        p_camera_center.y = transform.position.y;
+        p_camera_center.z = transform.position.z;
 
         Images[left_index].transform.position = new Vector2(
             transform.position.x - Images[center_index].sprite.bounds.size.x,
@@ -32,10 +32,12 @@ public class ParalaxLayer : MonoBehaviour {
     }
     void Update() {
         Vector3 camera_center = Camera.main.transform.position;
-        camera_center.z = 0;
+        camera_center.y = transform.position.y;
+        camera_center.z = transform.position.z;
 
         if (p_camera_center != camera_center) {
             Vector3 dir = (camera_center - p_camera_center);
+            dir.y = 0;
             foreach (SpriteRenderer sprite in Images) {
                 sprite.transform.position += -dir * Speed * Time.deltaTime;
             }
