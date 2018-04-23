@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 4238176400424574}
   - component: {fileID: 114046280852368076}
   - component: {fileID: 114622902686762336}
+  - component: {fileID: 114449661302440150}
   m_Layer: 0
   m_Name: InControl
   m_TagString: InControl
@@ -59,6 +60,17 @@ MonoBehaviour:
   dontDestroyOnLoad: 0
   customProfiles:
   - KeyboardMouse
+--- !u!114 &114449661302440150
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1790814568183226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f80208c4a71d8e42ae1efd06abb9f27, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114622902686762336
 MonoBehaviour:
   m_ObjectHideFlags: 1

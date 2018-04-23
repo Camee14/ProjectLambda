@@ -399,6 +399,10 @@ public class Player : CustomPhysicsObject, IAttackable
             onPlayerDeath();
         }
 
+        Body.SetBool("is_hitting_ground", false);
+        Mass = Mass / 10f;
+        canUseAllControls(true);
+
         stun_timer = 0f;
         combo_timer = 0f;
         attack_timer = 0;
