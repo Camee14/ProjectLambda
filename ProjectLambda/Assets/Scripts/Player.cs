@@ -19,6 +19,7 @@ public class Player : CustomPhysicsObject, IAttackable
     Energy energy;
     public Grapple grapple;
     public Animator SwordEffectAnim;
+    public Animator Body;
     public GameObject DashIndicatorPrefab;
     public GameObject AITriggerPrefab;
 
@@ -139,6 +140,10 @@ public class Player : CustomPhysicsObject, IAttackable
     {
         soundEffect.Stop();
         soundEffect.PlayOneShot(sound, volume);
+    }
+    void animateBody() {
+        Body.SetBool("is_grounded", IsGrounded);
+        Body.SetBool("is_falling", !IsGrounded && Velocity.y < 0);
     }
 
     protected override void update()
@@ -290,6 +295,8 @@ public class Player : CustomPhysicsObject, IAttackable
 
         transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x) * Facing, transform.localScale.y, transform.localScale.z);
 
+        animateBody();
+
         detector.Update();
     }
     protected override void fixedUpdate()
@@ -322,6 +329,10 @@ public class Player : CustomPhysicsObject, IAttackable
         if (movement_enabled)
         {
             move.x = InputManager.ActiveDevice.LeftStickX.Value;
+            Body.SetBool("is_walking", move.x != 0 && IsGrounded);
+        }
+        else {
+            Body.SetBool("is_walking", false);
         }
         if (jump_enabled)
         {
@@ -330,6 +341,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 if (IsGrounded)
                 {
                     Velocity = new Vector2(Velocity.x, JumpForce);
+                    Body.SetTrigger("jump");
                 }
             }
             else if (InputManager.ActiveDevice.Action1.WasReleased)
@@ -346,6 +358,7 @@ public class Player : CustomPhysicsObject, IAttackable
                 jump_down_on_unpause = false;
             }
         }
+        Body.SetBool("is_walking", move.x != 0);
         return move * MovementSpeed;
     }
     protected override void onDrawGizmos()
@@ -426,6 +439,7 @@ public class Player : CustomPhysicsObject, IAttackable
     void doBasicAttack(Vector2 dir, bool special)
     {
         SwordEffectAnim.Play("SwordSlashDown", 0);
+        Body.SetTrigger("basic_attack");
         Collider2D[] cols = Physics2D.OverlapBoxAll(transform.position + new Vector3(Facing * 1.5f, 0.5f), new Vector2(2f, 2f), 0f, enemy_mask);
         if (cols.Length != 0)
         {
@@ -527,6 +541,7 @@ public class Player : CustomPhysicsObject, IAttackable
         Mass *= multiplier;
         canUseAllControls(false);
 
+        Body.SetBool("is_hitting_ground", true);
 
         while (!IsGrounded && !interupt_action)
         {
@@ -538,7 +553,7 @@ public class Player : CustomPhysicsObject, IAttackable
             }
             yield return null;
         }
-
+        
         if (!interupt_action)
         {
             Collider2D[] cols = Physics2D.OverlapCircleAll(transform.position, 10f, enemy_mask);
@@ -556,7 +571,7 @@ public class Player : CustomPhysicsObject, IAttackable
         else {
             Velocity = Vector2.zero;
         }
-
+        Body.SetBool("is_hitting_ground", false);
         Mass = Mass / multiplier;
         canUseAllControls(true);
     }
