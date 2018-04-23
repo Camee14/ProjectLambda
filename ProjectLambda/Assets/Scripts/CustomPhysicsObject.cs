@@ -13,6 +13,7 @@ public class CustomPhysicsObject : MonoBehaviour {
     public float min_ground_normal_y = 0.65f;
     public float MaxVelocity = 10f;
     public float TetherGravityModifier = 0.45f;
+    public float MassModifier = 1f;
     bool override_auto_facing = false;
     bool override_velx = true;
     bool override_gravity = false;
@@ -135,7 +136,7 @@ public class CustomPhysicsObject : MonoBehaviour {
             if (tether.magnitude > max_tether_length)
             {
                 float grav_angle = Vector2.Angle(Physics2D.gravity, rb2d.position - tether_point) * Mathf.Deg2Rad;
-                float tangent_g = Physics2D.gravity.magnitude * Mass * Mathf.Sin(grav_angle);
+                float tangent_g = Physics2D.gravity.magnitude * (Mass * MassModifier) * Mathf.Sin(grav_angle);
 
                 Vector2 tangent = new Vector2(tether.y, -tether.x);
 
@@ -150,7 +151,7 @@ public class CustomPhysicsObject : MonoBehaviour {
                 velocity = vel_proj;
             }
         }
-        velocity += sum_of_forces * Mass * Time.deltaTime;
+        velocity += sum_of_forces * (Mass * MassModifier) * Time.deltaTime;
 
         /*if (velocity.magnitude > MaxVelocity)
         {

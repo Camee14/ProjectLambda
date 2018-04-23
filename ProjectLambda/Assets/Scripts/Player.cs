@@ -398,9 +398,8 @@ public class Player : CustomPhysicsObject, IAttackable
         if (onPlayerDeath != null) {
             onPlayerDeath();
         }
-
+        MassModifier = 1f;
         Body.SetBool("is_hitting_ground", false);
-        Mass = Mass / 10f;
         canUseAllControls(true);
 
         stun_timer = 0f;
@@ -540,9 +539,7 @@ public class Player : CustomPhysicsObject, IAttackable
         health.setInvincible(false);
     }
     IEnumerator doGroundSlam() {
-        float multiplier = 10f;
-
-        Mass *= multiplier;
+        MassModifier = 10f;
         canUseAllControls(false);
 
         Body.SetBool("is_hitting_ground", true);
@@ -576,7 +573,7 @@ public class Player : CustomPhysicsObject, IAttackable
             Velocity = Vector2.zero;
         }
         Body.SetBool("is_hitting_ground", false);
-        Mass = Mass / multiplier;
+        MassModifier = 1f;
         canUseAllControls(true);
     }
 }
